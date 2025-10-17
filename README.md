@@ -6,7 +6,8 @@
 **Automated web testing powered by Puppeteer + Chrome DevTools Protocol**
 
 An intelligent web testing platform that automatically generates and executes test cases for any website. Just provide a URL and get comprehensive test results with performance metrics, accessibility analysis, and detailed reports.
-![Uploading image.png…]()
+<img width="1220" height="905" alt="image" src="https://github.com/user-attachments/assets/4a4af554-e5d9-450d-b7bb-6f19fc85ded0" />
+
 
 
 URL :
