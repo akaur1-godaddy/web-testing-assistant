@@ -6,9 +6,10 @@
 **Automated web testing powered by Puppeteer + Chrome DevTools Protocol**
 
 An intelligent web testing platform that automatically generates and executes test cases for any website. Just provide a URL and get comprehensive test results with performance metrics, accessibility analysis, and detailed reports.
+![Uploading image.png…]()
 
-![AutoQA AI Demo](https://via.placeholder.com/1200x600/7c3aed/ffffff?text=AutoQA+AI+-+Automated+Web+Testing)
 
+URL :
 ---
 
 ## ✨ Features
