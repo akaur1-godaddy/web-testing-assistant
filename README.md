@@ -27,6 +27,9 @@ An intelligent web testing platform that automatically generates and executes te
 - Status code assertions
 - Response data validation
 
+- <img width="1232" height="827" alt="image" src="https://github.com/user-attachments/assets/4eed7fd5-c792-4c43-bcae-0a7ae6798d09" />
+
+
 ### 🔧 **Chrome DevTools Integration**
 - **Core Web Vitals**: FCP, LCP, CLS measurement
 - **Accessibility Analysis**: WCAG compliance checking
