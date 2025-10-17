@@ -147,6 +147,8 @@ http://localhost:3000
 
 <img width="1228" height="672" alt="image" src="https://github.com/user-attachments/assets/0386a7cb-96b6-461b-8ac9-8379ffe1b747" />
 
+<img width="1561" height="1030" alt="image" src="https://github.com/user-attachments/assets/112b1a0e-3f3b-4a04-ab3c-2cd7e94befd4" />
+<img width="1258" height="978" alt="image" src="https://github.com/user-attachments/assets/05fe9f94-1565-4959-97ab-9c8165ed0f92" />
 
 ## 🏗️ Architecture
 
