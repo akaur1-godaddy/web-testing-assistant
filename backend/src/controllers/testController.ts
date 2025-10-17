@@ -1,8 +1,9 @@
 import { Request, Response } from 'express';
-import { TestRunner } from '../services/testRunner';
+import { TestRunner, TestCase } from '../services/testRunner';
 import { TestGenerator } from '../services/testGenerator';
 import { TestFileParser } from '../services/testFileParser';
 import { DevToolsAnalyzer } from '../services/devToolsAnalyzer';
+import { APITester, APITestCase } from '../services/apiTester';
 
 export async function runTests(req: Request, res: Response) {
   try {
@@ -41,7 +42,7 @@ export async function runTests(req: Request, res: Response) {
     }
 
     // Generate or load test cases
-    let testCases;
+    let testCases: TestCase[] = [];
     let testSource = 'auto-generated';
     
     if (testFile) {
@@ -61,6 +62,19 @@ export async function runTests(req: Request, res: Response) {
       testCases = parsed.tests;
       testSource = `uploaded-${parsed.format}`;
       console.log(`✅ Loaded ${testCases.length} tests from ${parsed.format} file`);
+      
+      // Check if uploaded file has ONLY API tests (no UI tests)
+      const hasUiTests = testCases.some((tc: TestCase) => tc.type !== 'api');
+      
+      if (!hasUiTests && url) {
+        // Auto-generate UI tests since file only has API tests
+        console.log('🤖 Auto-generating UI tests (API-only file detected)...');
+        const testGenerator = new TestGenerator(testRunner.getPage());
+        const generatedTests = await testGenerator.generateTests();
+        testCases = [...generatedTests, ...testCases]; // UI tests first, then API tests
+        testSource = 'hybrid-auto+uploaded';
+        console.log(`✅ Added ${generatedTests.length} auto-generated UI tests`);
+      }
     } else {
       console.log('🤖 Auto-generating test cases...');
       const testGenerator = new TestGenerator(testRunner.getPage());
@@ -68,9 +82,49 @@ export async function runTests(req: Request, res: Response) {
       testSource = 'auto-generated';
     }
 
-    // Execute tests
-    console.log(`🧪 Executing ${testCases.length} test cases...`);
-    const results = await testRunner.executeTests(testCases);
+    // Separate UI and API tests
+    const uiTests = testCases.filter((tc: TestCase) => tc.type !== 'api');
+    const apiTests = testCases.filter((tc: TestCase) => tc.type === 'api');
+
+    console.log(`🧪 Executing ${testCases.length} test cases (${uiTests.length} UI, ${apiTests.length} API)...`);
+    
+    // Execute UI tests
+    let results = await testRunner.executeTests(uiTests);
+    
+    // Execute API tests if any
+    if (apiTests.length > 0) {
+      console.log('🌐 Executing API tests...');
+      const apiTester = new APITester();
+      
+      // Convert TestCase[] to APITestCase[]
+      const apiTestCases: APITestCase[] = apiTests.map((tc: TestCase) => ({
+        name: tc.name,
+        method: tc.apiTest!.method,
+        url: tc.apiTest!.url,
+        headers: tc.apiTest?.headers,
+        body: tc.apiTest?.body,
+        expectedStatus: tc.apiTest?.expectedStatus,
+        expectedResponse: tc.apiTest?.expectedResponse,
+        timeout: tc.timeout,
+      }));
+      
+      const apiResults = await apiTester.executeTests(apiTestCases);
+      
+      // Convert API results to TestResult format and merge
+      const convertedApiResults = apiResults.map((ar) => ({
+        name: ar.name,
+        status: ar.status,
+        message: ar.message,
+        duration: ar.duration,
+        apiResponse: {
+          request: ar.request,
+          response: ar.response,
+          validations: ar.validations,
+        },
+      }));
+      
+      results = [...results, ...convertedApiResults];
+    }
 
     // Collect performance metrics
     const performance = await testRunner.getPerformanceMetrics();

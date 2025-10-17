@@ -2,11 +2,24 @@ import puppeteer, { Browser, Page } from 'puppeteer';
 
 export interface TestCase {
   name: string;
-  type: 'click' | 'input' | 'navigation' | 'assertion' | 'wait';
+  type: 'click' | 'input' | 'navigation' | 'assertion' | 'wait' | 'api';
   selector?: string;
   value?: string;
   expected?: string;
   timeout?: number;
+  // API test specific fields
+  apiTest?: {
+    method: 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH' | 'HEAD' | 'OPTIONS';
+    url: string;
+    headers?: Record<string, string>;
+    body?: any;
+    expectedStatus?: number;
+    expectedResponse?: {
+      contains?: string[];
+      fields?: string[];
+      schema?: Record<string, any>;
+    };
+  };
 }
 
 export interface TestResult {
@@ -15,6 +28,27 @@ export interface TestResult {
   message?: string;
   duration?: number;
   screenshot?: string;
+  apiResponse?: {
+    request: {
+      method: string;
+      url: string;
+      headers?: Record<string, string>;
+      body?: any;
+    };
+    response?: {
+      status: number;
+      statusText: string;
+      headers: Record<string, string>;
+      data: any;
+      size: number;
+    };
+    validations?: {
+      statusCode: boolean;
+      responseContains: boolean;
+      requiredFields: boolean;
+      schemaMatch: boolean;
+    };
+  };
 }
 
 export class TestRunner {

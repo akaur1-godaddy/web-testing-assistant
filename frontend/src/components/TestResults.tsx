@@ -231,6 +231,88 @@ function TestResults({ results }: TestResultsProps) {
                     )}
                   </div>
                 )}
+                {test.apiResponse && (
+                  <div className="api-response-section" style={{ 
+                    marginTop: '15px', 
+                    padding: '15px', 
+                    backgroundColor: '#f8f9fa', 
+                    borderRadius: '8px',
+                    border: '1px solid #dee2e6'
+                  }}>
+                    <h4 style={{ marginBottom: '10px', fontSize: '14px', color: '#495057' }}>
+                      🌐 API Test Details
+                    </h4>
+                    
+                    {/* Request */}
+                    <div style={{ marginBottom: '15px' }}>
+                      <strong style={{ fontSize: '13px', color: '#495057' }}>Request:</strong>
+                      <div style={{ marginLeft: '10px', fontSize: '12px' }}>
+                        <div><span style={{ color: '#007bff', fontWeight: 'bold' }}>{test.apiResponse.request.method}</span> {test.apiResponse.request.url}</div>
+                        {test.apiResponse.request.headers && Object.keys(test.apiResponse.request.headers).length > 0 && (
+                          <details style={{ marginTop: '5px' }}>
+                            <summary style={{ cursor: 'pointer', color: '#007bff', fontWeight: 'bold' }}>▶ Request Headers</summary>
+                            <pre style={{ fontSize: '11px', marginTop: '5px', padding: '8px', backgroundColor: '#f8f9fa', borderRadius: '4px', overflow: 'auto', border: '1px solid #dee2e6', color: '#212529' }}>
+                              {JSON.stringify(test.apiResponse.request.headers, null, 2)}
+                            </pre>
+                          </details>
+                        )}
+                        {test.apiResponse.request.body && (
+                          <details open style={{ marginTop: '5px' }}>
+                            <summary style={{ cursor: 'pointer', color: '#007bff', fontWeight: 'bold' }}>▼ Request Body</summary>
+                            <pre style={{ fontSize: '11px', marginTop: '5px', padding: '8px', backgroundColor: '#f8f9fa', borderRadius: '4px', overflow: 'auto', border: '1px solid #dee2e6', color: '#212529' }}>
+                              {JSON.stringify(test.apiResponse.request.body, null, 2)}
+                            </pre>
+                          </details>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Response */}
+                    {test.apiResponse.response && (
+                      <div style={{ marginBottom: '15px' }}>
+                        <strong style={{ fontSize: '13px', color: '#495057' }}>Response:</strong>
+                        <div style={{ marginLeft: '10px', fontSize: '12px' }}>
+                          <div>
+                            Status: <span style={{ 
+                              fontWeight: 'bold', 
+                              color: test.apiResponse.response.status >= 200 && test.apiResponse.response.status < 300 ? '#28a745' : '#dc3545' 
+                            }}>
+                              {test.apiResponse.response.status} {test.apiResponse.response.statusText}
+                            </span>
+                          </div>
+                          <div style={{ marginTop: '3px' }}>Size: {(test.apiResponse.response.size / 1024).toFixed(2)} KB</div>
+                          {test.apiResponse.response.headers && Object.keys(test.apiResponse.response.headers).length > 0 && (
+                            <details style={{ marginTop: '5px' }}>
+                              <summary style={{ cursor: 'pointer', color: '#28a745', fontWeight: 'bold' }}>▶ Response Headers</summary>
+                              <pre style={{ fontSize: '11px', marginTop: '5px', padding: '8px', backgroundColor: '#f8f9fa', borderRadius: '4px', overflow: 'auto', maxHeight: '150px', border: '1px solid #dee2e6', color: '#212529' }}>
+                                {JSON.stringify(test.apiResponse.response.headers, null, 2)}
+                              </pre>
+                            </details>
+                          )}
+                          <details open style={{ marginTop: '5px' }}>
+                            <summary style={{ cursor: 'pointer', color: '#28a745', fontWeight: 'bold' }}>▼ Response Body (click to collapse)</summary>
+                            <pre style={{ fontSize: '11px', marginTop: '5px', padding: '8px', backgroundColor: '#f8f9fa', borderRadius: '4px', overflow: 'auto', maxHeight: '200px', border: '1px solid #dee2e6', color: '#212529' }}>
+                              {test.apiResponse.response.data ? JSON.stringify(test.apiResponse.response.data, null, 2) : 'No response data'}
+                            </pre>
+                          </details>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Validations */}
+                    {test.apiResponse.validations && (
+                      <div>
+                        <strong style={{ fontSize: '13px', color: '#495057' }}>Validations:</strong>
+                        <div style={{ marginLeft: '10px', fontSize: '12px', marginTop: '5px', color: '#212529' }}>
+                          <div>{test.apiResponse.validations.statusCode ? '✅' : '❌'} Status Code</div>
+                          <div>{test.apiResponse.validations.responseContains ? '✅' : '❌'} Response Contains</div>
+                          <div>{test.apiResponse.validations.requiredFields ? '✅' : '❌'} Required Fields</div>
+                          <div>{test.apiResponse.validations.schemaMatch ? '✅' : '❌'} Schema Match</div>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
               </li>
             ))}
           </ul>

@@ -1,0 +1,99 @@
+[
+  {
+    "name": "GET Request - Fetch Users",
+    "method": "GET",
+    "url": "https://jsonplaceholder.typicode.com/users",
+    "expectedStatus": 200,
+    "expectedResponse": {
+      "fields": ["id", "name", "email"]
+    }
+  },
+  {
+    "name": "GET Request - Fetch Single User",
+    "method": "GET",
+    "url": "https://jsonplaceholder.typicode.com/users/1",
+    "expectedStatus": 200,
+    "expectedResponse": {
+      "contains": ["Leanne Graham", "Sincere@april.biz"],
+      "fields": ["id", "name", "email", "address"]
+    }
+  },
+  {
+    "name": "POST Request - Create User",
+    "method": "POST",
+    "url": "https://jsonplaceholder.typicode.com/users",
+    "headers": {
+      "Content-Type": "application/json"
+    },
+    "body": {
+      "name": "John Doe",
+      "email": "john.doe@example.com",
+      "username": "johndoe"
+    },
+    "expectedStatus": 201,
+    "expectedResponse": {
+      "fields": ["id", "name", "email"]
+    }
+  },
+  {
+    "name": "PUT Request - Update User",
+    "method": "PUT",
+    "url": "https://jsonplaceholder.typicode.com/users/1",
+    "headers": {
+      "Content-Type": "application/json"
+    },
+    "body": {
+      "name": "Updated Name",
+      "email": "updated@example.com"
+    },
+    "expectedStatus": 200
+  },
+  {
+    "name": "DELETE Request - Delete User",
+    "method": "DELETE",
+    "url": "https://jsonplaceholder.typicode.com/users/1",
+    "expectedStatus": 200
+  },
+  {
+    "name": "GET Request - Test 404 Error",
+    "method": "GET",
+    "url": "https://jsonplaceholder.typicode.com/users/9999",
+    "expectedStatus": 404
+  },
+  {
+    "name": "GET Request with Headers - Auth Example",
+    "method": "GET",
+    "url": "https://jsonplaceholder.typicode.com/posts/1",
+    "headers": {
+      "Authorization": "Bearer your-token-here",
+      "X-Custom-Header": "CustomValue"
+    },
+    "expectedStatus": 200,
+    "expectedResponse": {
+      "fields": ["userId", "id", "title", "body"]
+    }
+  },
+  {
+    "name": "POST Request - Complex Schema Validation",
+    "method": "POST",
+    "url": "https://jsonplaceholder.typicode.com/posts",
+    "headers": {
+      "Content-Type": "application/json"
+    },
+    "body": {
+      "title": "Test Post",
+      "body": "This is a test post body",
+      "userId": 1
+    },
+    "expectedStatus": 201,
+    "expectedResponse": {
+      "schema": {
+        "id": "number",
+        "title": "string",
+        "body": "string",
+        "userId": "number"
+      }
+    }
+  }
+]
+

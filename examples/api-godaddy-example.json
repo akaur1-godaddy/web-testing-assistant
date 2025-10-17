@@ -1,0 +1,31 @@
+[
+  {
+    "name": "API - Health Check",
+    "method": "GET",
+    "url": "https://api.godaddy.com/",
+    "expectedStatus": 200
+  },
+  {
+    "name": "API - Check Domain Availability",
+    "method": "GET",
+    "url": "https://api.godaddy.com/v1/domains/available?domain=example.com",
+    "headers": {
+      "Authorization": "sso-key YOUR_API_KEY:YOUR_API_SECRET",
+      "Accept": "application/json"
+    },
+    "expectedStatus": 200,
+    "expectedResponse": {
+      "fields": ["available", "domain", "price"]
+    }
+  },
+  {
+    "name": "API - Get Domain Info (Mock)",
+    "method": "GET",
+    "url": "https://jsonplaceholder.typicode.com/users/1",
+    "expectedStatus": 200,
+    "expectedResponse": {
+      "fields": ["id", "name", "email"]
+    }
+  }
+]
+

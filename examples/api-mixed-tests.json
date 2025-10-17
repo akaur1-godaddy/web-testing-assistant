@@ -1,0 +1,66 @@
+[
+  {
+    "name": "Navigate to homepage",
+    "type": "navigation",
+    "value": "https://jsonplaceholder.typicode.com"
+  },
+  {
+    "name": "API - Fetch all posts",
+    "method": "GET",
+    "url": "https://jsonplaceholder.typicode.com/posts",
+    "expectedStatus": 200,
+    "expectedResponse": {
+      "fields": ["id", "userId", "title", "body"]
+    }
+  },
+  {
+    "name": "API - Create new post",
+    "method": "POST",
+    "url": "https://jsonplaceholder.typicode.com/posts",
+    "headers": {
+      "Content-Type": "application/json"
+    },
+    "body": {
+      "title": "My Test Post",
+      "body": "This is the body of my test post",
+      "userId": 1
+    },
+    "expectedStatus": 201
+  },
+  {
+    "name": "Check page title exists",
+    "type": "assertion",
+    "selector": "title"
+  },
+  {
+    "name": "API - Fetch comments",
+    "method": "GET",
+    "url": "https://jsonplaceholder.typicode.com/comments?postId=1",
+    "expectedStatus": 200,
+    "expectedResponse": {
+      "contains": ["email", "body"],
+      "fields": ["postId", "id", "name", "email", "body"]
+    }
+  },
+  {
+    "name": "Wait for 2 seconds",
+    "type": "wait",
+    "timeout": 2000
+  },
+  {
+    "name": "API - Update post",
+    "method": "PATCH",
+    "url": "https://jsonplaceholder.typicode.com/posts/1",
+    "headers": {
+      "Content-Type": "application/json"
+    },
+    "body": {
+      "title": "Updated Title"
+    },
+    "expectedStatus": 200,
+    "expectedResponse": {
+      "contains": ["Updated Title"]
+    }
+  }
+]
+

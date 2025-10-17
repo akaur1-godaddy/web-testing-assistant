@@ -19,6 +19,14 @@ An intelligent web testing platform that automatically generates and executes te
 - Tests forms, buttons, links, and images
 - No manual test writing required
 
+### 🌐 **API Testing (NEW!)**
+- Test REST APIs directly (GET, POST, PUT, DELETE, PATCH)
+- Request/Response validation
+- Header and authentication support
+- JSON schema validation
+- Status code assertions
+- Response data validation
+
 ### 🔧 **Chrome DevTools Integration**
 - **Core Web Vitals**: FCP, LCP, CLS measurement
 - **Accessibility Analysis**: WCAG compliance checking
@@ -28,12 +36,14 @@ An intelligent web testing platform that automatically generates and executes te
 
 ### 📝 **Custom Test Support**
 - Upload test files in JSON, JavaScript, or TXT format
+- Mix UI and API tests in one file
 - Flexible test syntax
 - Reusable test suites
 
 ### 📊 **Detailed Reports**
 - Pass/fail test results
-- Screenshot on failure
+- Screenshot on failure (UI tests)
+- API request/response details
 - Performance metrics
 - Accessibility score
 - Console errors
@@ -98,19 +108,19 @@ http://localhost:3000
 
 ## 📖 Usage
 
-### Mode 1: Automatic Testing
+### Mode 1: Automatic UI Testing
 1. Enter website URL
 2. (Optional) Add login credentials
 3. Click "Run Tests"
 4. View comprehensive results
 
-### Mode 2: Custom Tests
+### Mode 2: Custom Tests (UI + API)
 1. Create a test file (JSON/JS/TXT)
 2. Upload the file
-3. Enter website URL
+3. Enter website URL (required for UI tests)
 4. Click "Run Tests"
 
-### Example Test File (JSON)
+### Example UI Test File (JSON)
 ```json
 [
   {
@@ -131,10 +141,86 @@ http://localhost:3000
 ]
 ```
 
+### Example API Test File (JSON)
+```json
+[
+  {
+    "name": "GET - Fetch users",
+    "method": "GET",
+    "url": "https://api.example.com/users",
+    "expectedStatus": 200,
+    "expectedResponse": {
+      "fields": ["id", "name", "email"]
+    }
+  },
+  {
+    "name": "POST - Create user",
+    "method": "POST",
+    "url": "https://api.example.com/users",
+    "headers": {
+      "Content-Type": "application/json",
+      "Authorization": "Bearer YOUR_TOKEN"
+    },
+    "body": {
+      "name": "John Doe",
+      "email": "john@example.com"
+    },
+    "expectedStatus": 201,
+    "expectedResponse": {
+      "contains": ["John Doe"],
+      "schema": {
+        "id": "number",
+        "name": "string",
+        "email": "string"
+      }
+    }
+  }
+]
+```
+
+### Example Mixed Test File (UI + API)
+```json
+[
+  {
+    "name": "Navigate to homepage",
+    "type": "navigation",
+    "value": "https://example.com"
+  },
+  {
+    "name": "API - Health check",
+    "method": "GET",
+    "url": "https://api.example.com/health",
+    "expectedStatus": 200
+  },
+  {
+    "name": "Check login button",
+    "type": "assertion",
+    "selector": "#login-btn"
+  }
+]
+```
+
+### API Test Configuration
+
+**Supported HTTP Methods:**
+- `GET`, `POST`, `PUT`, `DELETE`, `PATCH`, `HEAD`, `OPTIONS`
+
+**Request Options:**
+- `headers`: Custom headers (auth tokens, content-type, etc.)
+- `body`: Request payload (for POST, PUT, PATCH)
+- `timeout`: Request timeout in milliseconds
+
+**Response Validation:**
+- `expectedStatus`: Expected HTTP status code
+- `expectedResponse.contains`: Array of strings expected in response
+- `expectedResponse.fields`: Required fields in response object
+- `expectedResponse.schema`: Expected data types for fields
+
 ---
 
 ## 📊 Test Results Include
 
+### UI Tests
 - ✅ Pass/fail status for each test
 - ⚡ Core Web Vitals (Google's performance metrics)
 - ♿ Accessibility score and issues
@@ -142,6 +228,14 @@ http://localhost:3000
 - 📋 Console errors and warnings
 - 📸 Screenshots on test failure
 - ⏱️ Performance metrics
+
+### API Tests
+- ✅ Pass/fail status for each endpoint
+- 📝 Full request details (method, URL, headers, body)
+- 📄 Complete response data (status, headers, body)
+- ✔️ Validation results (status code, schema, fields, content)
+- ⏱️ Response time for each request
+- 📊 Response size in KB
 
 ---
 
@@ -153,13 +247,19 @@ http://localhost:3000
 ## 🏗️ Architecture
 
 ```
-Frontend (React)  ←→  Backend (Express)  ←→  Puppeteer  ←→  Target Website
-                                              ↓
-                                    Chrome DevTools Protocol
-                                              ↓
-                                    Performance Analysis
-                                    Accessibility Checks
-                                    Network Monitoring
+Frontend (React)  ←→  Backend (Express)  ←→  Puppeteer  ←→  Target Website (UI)
+                            ↓                    ↓
+                            ↓          Chrome DevTools Protocol
+                            ↓                    ↓
+                            ↓          Performance Analysis
+                            ↓          Accessibility Checks
+                            ↓          Network Monitoring
+                            ↓
+                       API Tester (axios)  ←→  REST APIs
+                            ↓
+                    Request/Response Validation
+                    Schema & Status Checking
+                    Header Management
 ```
 
 ---

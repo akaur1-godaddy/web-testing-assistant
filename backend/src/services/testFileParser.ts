@@ -267,6 +267,23 @@ export class TestFileParser {
         return [item as TestCase];
       }
 
+      // If it's an API test (check for method and url)
+      if (item.method && item.url) {
+        return [{
+          name: item.name || `${item.method} ${item.url}`,
+          type: 'api' as const,
+          timeout: item.timeout,
+          apiTest: {
+            method: item.method,
+            url: item.url,
+            headers: item.headers,
+            body: item.body,
+            expectedStatus: item.expectedStatus,
+            expectedResponse: item.expectedResponse,
+          },
+        }];
+      }
+
       // If it has a steps array (common format)
       if (item.steps && Array.isArray(item.steps)) {
         return this.convertStepsToTestCases(item);
