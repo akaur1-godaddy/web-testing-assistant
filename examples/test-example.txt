@@ -1,0 +1,25 @@
+# Example Test File - Text Format
+
+Test: Homepage Navigation
+1. Navigate to /
+2. Verify #header exists
+3. Verify #footer exists
+4. Click #menu-button
+5. Verify #dropdown-menu appears
+
+Test: Login Flow
+1. Navigate to /login
+2. Type user@example.com into #email
+3. Type password123 into #password
+4. Click #login-button
+5. Verify #dashboard exists
+6. Check success message appears
+
+Test: Contact Form
+1. Navigate to /contact
+2. Type John Doe into #name
+3. Type john@example.com into #email
+4. Type This is a test message into #message
+5. Click #submit-button
+6. Verify success message appears
+

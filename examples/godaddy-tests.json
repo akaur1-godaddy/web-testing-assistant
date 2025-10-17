@@ -1,0 +1,44 @@
+[
+  {
+    "name": "GoDaddy homepage loads",
+    "type": "navigation",
+    "value": "https://www.godaddy.com"
+  },
+  {
+    "name": "Search domain input exists",
+    "type": "assertion",
+    "selector": "input[type='search'], input[name*='domain']"
+  },
+  {
+    "name": "Enter test domain name",
+    "type": "input",
+    "selector": "input[type='search'], input[name*='domain']",
+    "value": "myawesomesite123"
+  },
+  {
+    "name": "Search button is clickable",
+    "type": "click",
+    "selector": "button[type='submit']"
+  },
+  {
+    "name": "Sign In link exists",
+    "type": "assertion",
+    "selector": "a[href*='login'], a:contains('Sign In')"
+  },
+  {
+    "name": "Domains menu link exists",
+    "type": "assertion",
+    "selector": "a[href*='domain']"
+  },
+  {
+    "name": "Websites menu link exists",
+    "type": "assertion",
+    "selector": "a[href*='website']"
+  },
+  {
+    "name": "Hosting menu link exists",
+    "type": "assertion",
+    "selector": "a[href*='hosting']"
+  }
+]
+

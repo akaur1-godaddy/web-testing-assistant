@@ -1,0 +1,29 @@
+[
+  {
+    "name": "Homepage loads successfully",
+    "type": "navigation",
+    "value": "/"
+  },
+  {
+    "name": "Search form exists",
+    "type": "assertion",
+    "selector": "#search-form"
+  },
+  {
+    "name": "Enter search query",
+    "type": "input",
+    "selector": "#search-input",
+    "value": "test query"
+  },
+  {
+    "name": "Click search button",
+    "type": "click",
+    "selector": "#search-button"
+  },
+  {
+    "name": "Verify search results appear",
+    "type": "assertion",
+    "selector": "#search-results"
+  }
+]
+
