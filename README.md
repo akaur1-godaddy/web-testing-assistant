@@ -1,5 +1,8 @@
 # 🚀 AutoQA AI - Web Testing Assistant
 
+<img width="1567" height="874" alt="image" src="https://github.com/user-attachments/assets/476c6d22-cdd2-40c6-9a22-2b279e2b3445" />
+
+
 **Automated web testing powered by Puppeteer + Chrome DevTools Protocol**
 
 An intelligent web testing platform that automatically generates and executes test cases for any website. Just provide a URL and get comprehensive test results with performance metrics, accessibility analysis, and detailed reports.
@@ -142,6 +145,9 @@ http://localhost:3000
 
 ---
 
+<img width="1228" height="672" alt="image" src="https://github.com/user-attachments/assets/0386a7cb-96b6-461b-8ac9-8379ffe1b747" />
+
+
 ## 🏗️ Architecture
 
 ```
@@ -181,30 +187,8 @@ rm -rf node_modules package-lock.json
 npm install
 ```
 
----
-
-## 📝 License
-
-MIT License
-
----
-
-## 👥 Team
-
-Built with ❤️ for automated web testing
-
----
-
-## 🙏 Acknowledgments
-
-- **Puppeteer** - Browser automation
-- **Chrome DevTools Protocol** - Deep browser insights
-- **React** - Frontend framework
-- **Express** - Backend framework
-- **TypeScript** - Type safety
 
 ---
 
 **Repository**: https://github.com/akaur1-godaddy/web-testing-assistant
 
-**Happy Testing! 🚀**
