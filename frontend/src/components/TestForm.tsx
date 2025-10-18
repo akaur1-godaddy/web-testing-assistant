@@ -5,9 +5,11 @@ import { TestResult } from '../App'
 interface TestFormProps {
   onTestStart: () => void
   onTestComplete: (results: TestResult) => void
+  aiOptions?: any
+  nlpDescription?: string
 }
 
-function TestForm({ onTestStart, onTestComplete }: TestFormProps) {
+function TestForm({ onTestStart, onTestComplete, aiOptions, nlpDescription }: TestFormProps) {
   const [url, setUrl] = useState('')
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
@@ -28,11 +30,25 @@ function TestForm({ onTestStart, onTestComplete }: TestFormProps) {
       formData.append('url', url)
       formData.append('username', username)
       formData.append('password', password)
+      
+      // Add AI options if provided
+      if (aiOptions) {
+        formData.append('aiOptions', JSON.stringify(aiOptions))
+      }
+      
+      // Add NLP description if provided
+      if (nlpDescription) {
+        formData.append('nlpDescription', nlpDescription)
+      }
+      
       if (testFile) {
         formData.append('testFile', testFile)
       }
 
-      const response = await fetch('/api/tests/run', {
+      // Use AI endpoint if AI options are provided, otherwise use original endpoint
+      const endpoint = aiOptions ? '/api/tests/ai-run' : '/api/tests/run'
+      
+      const response = await fetch(endpoint, {
         method: 'POST',
         body: formData,
       })
