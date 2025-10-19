@@ -39,7 +39,7 @@ function NavBar({
                         transition={{ duration: 0.5, delay: 0.1 }}
                     >
                         <h1 className="navbar-title">
-                            AutoQA AI
+                            AutoQA.AI
                         </h1>
                     </motion.div>
                 </div>
