@@ -5,6 +5,8 @@ import TestForm from './components/TestForm'
 import TestResults from './components/TestResults'
 import AIDashboard from './components/AIDashboard'
 import VoiceInterface from './components/VoiceInterface'
+import NavBar from './components/NavBar'
+import Footer from './components/Footer'
 
 export interface TestResult {
   success: boolean
@@ -151,7 +153,7 @@ function App() {
   const handleTestStart = () => {
     setLoading(true)
     setResults(null)
-    
+
     if (voiceEnabled) {
       speakResult('Starting comprehensive AI test suite')
     }
@@ -182,34 +184,34 @@ function App() {
         break
 
       case 'accessibility_test':
-        setAiOptions(prev => ({ 
-          ...prev, 
-          enhancedA11y: true, 
-          securityScan: false, 
-          visualAI: false 
+        setAiOptions(prev => ({
+          ...prev,
+          enhancedA11y: true,
+          securityScan: false,
+          visualAI: false
         }))
         break
 
       case 'performance_test':
-        setAiOptions(prev => ({ 
-          ...prev, 
-          predictiveAnalytics: true, 
-          realtimeMonitoring: true 
+        setAiOptions(prev => ({
+          ...prev,
+          predictiveAnalytics: true,
+          realtimeMonitoring: true
         }))
         break
 
       case 'security_test':
-        setAiOptions(prev => ({ 
-          ...prev, 
-          securityScan: true, 
-          enhancedA11y: false 
+        setAiOptions(prev => ({
+          ...prev,
+          securityScan: true,
+          enhancedA11y: false
         }))
         break
 
       case 'visual_test':
-        setAiOptions(prev => ({ 
-          ...prev, 
-          visualAI: true 
+        setAiOptions(prev => ({
+          ...prev,
+          visualAI: true
         }))
         break
 
@@ -262,214 +264,15 @@ function App() {
   }
 
   return (
-    <div className="app-container">
-      <style jsx>{`
-        .app-container {
-          min-height: 100vh;
-          background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-          color: white;
-        }
-
-        .ai-header {
-          background: rgba(255, 255, 255, 0.1);
-          backdrop-filter: blur(10px);
-          padding: 20px;
-          text-align: center;
-          border-bottom: 1px solid rgba(255, 255, 255, 0.2);
-        }
-
-        .ai-title {
-          font-size: 3rem;
-          font-weight: bold;
-          margin-bottom: 10px;
-          background: linear-gradient(45deg, #ff6b6b, #4ecdc4, #45b7d1);
-          -webkit-background-clip: text;
-          -webkit-text-fill-color: transparent;
-          background-clip: text;
-        }
-
-        .ai-subtitle {
-          font-size: 1.2rem;
-          opacity: 0.9;
-          margin-bottom: 20px;
-        }
-
-        .view-controls {
-          display: flex;
-          justify-content: center;
-          gap: 15px;
-          margin-bottom: 20px;
-        }
-
-        .view-button {
-          padding: 12px 24px;
-          background: rgba(255, 255, 255, 0.1);
-          border: 1px solid rgba(255, 255, 255, 0.2);
-          border-radius: 25px;
-          color: white;
-          cursor: pointer;
-          transition: all 0.3s ease;
-          font-weight: 500;
-        }
-
-        .view-button.active {
-          background: rgba(255, 255, 255, 0.2);
-          transform: translateY(-2px);
-          box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
-        }
-
-        .ai-controls {
-          display: flex;
-          justify-content: center;
-          gap: 10px;
-          margin-bottom: 20px;
-        }
-
-        .ai-toggle {
-          background: rgba(255, 255, 255, 0.1);
-          border: 1px solid rgba(255, 255, 255, 0.2);
-          border-radius: 20px;
-          color: white;
-          padding: 8px 16px;
-          cursor: pointer;
-          transition: all 0.3s ease;
-          font-size: 0.9rem;
-        }
-
-        .ai-toggle.enabled {
-          background: rgba(0, 255, 136, 0.2);
-          border-color: #00ff88;
-        }
-
-        .nlp-input-section {
-          background: rgba(255, 255, 255, 0.1);
-          backdrop-filter: blur(10px);
-          padding: 20px;
-          border-radius: 15px;
-          margin: 20px;
-          border: 1px solid rgba(255, 255, 255, 0.2);
-        }
-
-        .nlp-input {
-          width: 100%;
-          padding: 15px;
-          background: rgba(255, 255, 255, 0.1);
-          border: 1px solid rgba(255, 255, 255, 0.3);
-          border-radius: 10px;
-          color: white;
-          font-size: 1rem;
-          margin-bottom: 15px;
-        }
-
-        .nlp-input::placeholder {
-          color: rgba(255, 255, 255, 0.7);
-        }
-
-        .ai-options-grid {
-          display: grid;
-          grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-          gap: 10px;
-          margin-top: 15px;
-        }
-
-        .loading-ai {
-          text-align: center;
-          padding: 40px;
-        }
-
-        .ai-spinner {
-          width: 60px;
-          height: 60px;
-          border: 4px solid rgba(255, 255, 255, 0.3);
-          border-top: 4px solid #00ff88;
-          border-radius: 50%;
-          animation: spin 1s linear infinite;
-          margin: 0 auto 20px;
-        }
-
-        .loading-status {
-          font-size: 1.1rem;
-          margin-bottom: 10px;
-        }
-
-        .loading-substatus {
-          opacity: 0.8;
-          font-size: 0.9rem;
-        }
-
-        @keyframes spin {
-          0% { transform: rotate(0deg); }
-          100% { transform: rotate(360deg); }
-        }
-
-        .app-footer {
-          text-align: center;
-          padding: 20px;
-          background: rgba(0, 0, 0, 0.2);
-          margin-top: 40px;
-        }
-
-        .ai-badge {
-          display: inline-block;
-          background: linear-gradient(45deg, #00ff88, #00d4ff);
-          padding: 4px 12px;
-          border-radius: 12px;
-          font-size: 0.8rem;
-          font-weight: bold;
-          margin-left: 10px;
-        }
-      `}</style>
-
-      <header className="ai-header">
-        <motion.h1 
-          className="ai-title"
-          initial={{ opacity: 0, y: -50 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8 }}
-        >
-          🤖 AutoQA AI
-          <span className="ai-badge">v2.0 AI-Powered</span>
-        </motion.h1>
-        
-        <motion.p 
-          className="ai-subtitle"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.8, delay: 0.2 }}
-        >
-          Next-Generation Intelligent Web Testing Assistant
-        </motion.p>
-
-        <div className="view-controls">
-          <button
-            className={`view-button ${currentView === 'testing' ? 'active' : ''}`}
-            onClick={() => setCurrentView('testing')}
-          >
-            🧪 Testing Suite
-          </button>
-          <button
-            className={`view-button ${currentView === 'dashboard' ? 'active' : ''}`}
-            onClick={() => setCurrentView('dashboard')}
-          >
-            📊 AI Dashboard
-          </button>
-        </div>
-
-        <div className="ai-controls">
-          <button
-            className={`ai-toggle ${aiEnabled ? 'enabled' : ''}`}
-            onClick={() => setAiEnabled(!aiEnabled)}
-          >
-            🤖 AI Mode: {aiEnabled ? 'ON' : 'OFF'}
-          </button>
-          <button
-            className={`ai-toggle ${voiceEnabled ? 'enabled' : ''}`}
-            onClick={() => setVoiceEnabled(!voiceEnabled)}
-          >
-            🎤 Voice: {voiceEnabled ? 'ON' : 'OFF'}
-          </button>
-        </div>
-      </header>
+    <>
+      <NavBar
+        currentView={currentView}
+        onViewChange={setCurrentView}
+        aiEnabled={aiEnabled}
+        voiceEnabled={voiceEnabled}
+        onAiToggle={() => setAiEnabled(!aiEnabled)}
+        onVoiceToggle={() => setVoiceEnabled(!voiceEnabled)}
+      />
 
       <main className="app-main">
         <AnimatePresence mode="wait">
@@ -491,7 +294,7 @@ function App() {
                     onChange={(e) => setNlpDescription(e.target.value)}
                     rows={3}
                   />
-                  
+
                   <div className="ai-options-grid">
                     {Object.entries(aiOptions).map(([key, value]) => (
                       <button
@@ -506,7 +309,7 @@ function App() {
                 </div>
               )}
 
-              <TestForm 
+              <TestForm
                 onTestStart={handleTestStart}
                 onTestComplete={handleTestComplete}
                 aiOptions={aiEnabled ? aiOptions : undefined}
@@ -514,7 +317,7 @@ function App() {
               />
 
               {loading && (
-                <motion.div 
+                <motion.div
                   className="loading-ai"
                   initial={{ opacity: 0, scale: 0.9 }}
                   animate={{ opacity: 1, scale: 1 }}
@@ -549,7 +352,7 @@ function App() {
               exit={{ opacity: 0, x: -50 }}
               transition={{ duration: 0.3 }}
             >
-              <AIDashboard 
+              <AIDashboard
                 testResults={results}
                 predictiveInsights={results?.predictions}
               />
@@ -558,23 +361,16 @@ function App() {
         </AnimatePresence>
       </main>
 
-      <footer className="app-footer">
-        <p>
-          🚀 Powered by Advanced AI & Machine Learning
-          {results?.aiMetadata && (
-            <span> • Confidence: {Math.round(results.aiMetadata.confidenceScore * 100)}%</span>
-          )}
-        </p>
-      </footer>
+      <Footer aiMetadata={results?.aiMetadata} />
 
       {/* Voice Interface */}
       {voiceEnabled && (
-        <VoiceInterface 
+        <VoiceInterface
           onCommand={handleVoiceCommand}
           isEnabled={voiceEnabled}
         />
       )}
-    </div>
+    </>
   )
 }
 
