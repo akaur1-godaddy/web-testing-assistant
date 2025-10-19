@@ -2,7 +2,6 @@
   background: white;
   padding: 2rem;
   border-radius: 12px;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
   display: flex;
   flex-direction: column;
   gap: 2rem;
@@ -96,20 +95,22 @@
 .metric {
   display: flex;
   justify-content: space-between;
+  align-items: center;
   padding: 1rem;
   background: #f8f9fa;
   border-radius: 8px;
-  border-left: 4px solid #667eea;
+  border-left: 4px solid black;
 }
 
 .metric-label {
   font-weight: 500;
-  color: #555;
+  /* color: #555; */
 }
 
 .metric-value {
+  
   font-weight: 600;
-  color: #667eea;
+  color: black;
 }
 
 .test-list {
@@ -196,10 +197,10 @@
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
-  padding: 1.5rem;
-  background: linear-gradient(135deg, #f5f7fa 0%, #e8eef5 100%);
+  /* padding: 1.5rem; */
+  /* background: linear-gradient(135deg, #f5f7fa 0%, #e8eef5 100%);
   border-radius: 12px;
-  border: 2px solid #667eea;
+  border: 2px solid black; */
 }
 
 .devtools-section h3 {

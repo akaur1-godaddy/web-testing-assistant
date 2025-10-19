@@ -8,8 +8,8 @@ interface TestResultsProps {
 
 function TestResults({ results }: TestResultsProps) {
   const [expandedScreenshot, setExpandedScreenshot] = useState<number | null>(null)
-  const successRate = results.totalTests > 0 
-    ? Math.round((results.testsPassed / results.totalTests) * 100) 
+  const successRate = results.totalTests > 0
+    ? Math.round((results.testsPassed / results.totalTests) * 100)
     : 0
 
   return (
@@ -59,7 +59,7 @@ function TestResults({ results }: TestResultsProps) {
       {results.devTools && (
         <div className="devtools-section">
           <h3>🔧 Chrome DevTools Analysis</h3>
-          
+
           {/* Core Web Vitals */}
           {results.devTools.performance && (
             <div className="devtools-card">
@@ -71,7 +71,7 @@ function TestResults({ results }: TestResultsProps) {
                     <span className="metric-value">{Math.round(results.devTools.performance.firstContentfulPaint)}ms</span>
                   </div>
                 )}
-                {results.devTools.performance.largestContentfulPaint && (
+                {results.devTools.performance.largestContentfulPaint !== undefined && (
                   <div className="metric">
                     <span className="metric-label">Largest Contentful Paint:</span>
                     <span className="metric-value">{Math.round(results.devTools.performance.largestContentfulPaint)}ms</span>
@@ -94,8 +94,7 @@ function TestResults({ results }: TestResultsProps) {
               <div className="accessibility-score" style={{
                 fontSize: '48px',
                 fontWeight: 'bold',
-                color: results.devTools.accessibility.score >= 90 ? '#28a745' :
-                       results.devTools.accessibility.score >= 70 ? '#ffc107' : '#dc3545'
+                color: '#000'
               }}>
                 {results.devTools.accessibility.score}/100
               </div>
@@ -126,7 +125,7 @@ function TestResults({ results }: TestResultsProps) {
                 </div>
                 <div className="metric">
                   <span className="metric-label">Failed Requests:</span>
-                  <span className="metric-value" style={{color: results.devTools.network.failedRequests > 0 ? '#dc3545' : '#28a745'}}>
+                  <span className="metric-value" style={{ color: results.devTools.network.failedRequests > 0 ? '#dc3545' : '#28a745' }}>
                     {results.devTools.network.failedRequests}
                   </span>
                 </div>
@@ -134,7 +133,7 @@ function TestResults({ results }: TestResultsProps) {
               {results.devTools.network.slowestResource && (
                 <div className="slowest-resource">
                   <p><strong>Slowest Resource:</strong></p>
-                  <p style={{fontSize: '12px', wordBreak: 'break-all'}}>{results.devTools.network.slowestResource.url}</p>
+                  <p style={{ fontSize: '12px', wordBreak: 'break-all' }}>{results.devTools.network.slowestResource.url}</p>
                   <p>Duration: {results.devTools.network.slowestResource.duration}ms</p>
                 </div>
               )}
@@ -147,20 +146,20 @@ function TestResults({ results }: TestResultsProps) {
               <h4>📋 Console Messages</h4>
               {results.devTools.console.errors.length > 0 && (
                 <div className="console-errors">
-                  <h5 style={{color: '#dc3545'}}>❌ Errors ({results.devTools.console.errors.length})</h5>
+                  <h5 style={{ color: '#dc3545' }}>❌ Errors ({results.devTools.console.errors.length})</h5>
                   <ul>
                     {results.devTools.console.errors.slice(0, 5).map((error, idx) => (
-                      <li key={idx} style={{fontSize: '12px', color: '#dc3545'}}>{error}</li>
+                      <li key={idx} style={{ fontSize: '12px', color: '#dc3545' }}>{error}</li>
                     ))}
                   </ul>
                 </div>
               )}
               {results.devTools.console.warnings.length > 0 && (
                 <div className="console-warnings">
-                  <h5 style={{color: '#ffc107'}}>⚠️ Warnings ({results.devTools.console.warnings.length})</h5>
+                  <h5 style={{ color: '#ffc107' }}>⚠️ Warnings ({results.devTools.console.warnings.length})</h5>
                   <ul>
                     {results.devTools.console.warnings.slice(0, 5).map((warning, idx) => (
-                      <li key={idx} style={{fontSize: '12px', color: '#856404'}}>{warning}</li>
+                      <li key={idx} style={{ fontSize: '12px', color: '#856404' }}>{warning}</li>
                     ))}
                   </ul>
                 </div>
@@ -192,13 +191,13 @@ function TestResults({ results }: TestResultsProps) {
                   <div className="test-screenshot">
                     {expandedScreenshot === index ? (
                       <div className="screenshot-expanded" onClick={() => setExpandedScreenshot(null)}>
-                        <img 
-                          src={test.screenshot} 
-                          alt="Screenshot of failure" 
-                          style={{ 
-                            maxWidth: '100%', 
-                            marginTop: '10px', 
-                            borderRadius: '4px', 
+                        <img
+                          src={test.screenshot}
+                          alt="Screenshot of failure"
+                          style={{
+                            maxWidth: '100%',
+                            marginTop: '10px',
+                            borderRadius: '4px',
                             border: '3px solid #dc3545',
                             cursor: 'zoom-out'
                           }}
@@ -209,14 +208,14 @@ function TestResults({ results }: TestResultsProps) {
                       </div>
                     ) : (
                       <div className="screenshot-thumbnail" onClick={() => setExpandedScreenshot(index)}>
-                        <img 
-                          src={test.screenshot} 
-                          alt="Screenshot thumbnail" 
-                          style={{ 
-                            width: '150px', 
-                            height: 'auto', 
-                            marginTop: '10px', 
-                            borderRadius: '4px', 
+                        <img
+                          src={test.screenshot}
+                          alt="Screenshot thumbnail"
+                          style={{
+                            width: '150px',
+                            height: 'auto',
+                            marginTop: '10px',
+                            borderRadius: '4px',
                             border: '2px solid #dc3545',
                             cursor: 'zoom-in',
                             transition: 'transform 0.2s'
@@ -232,17 +231,17 @@ function TestResults({ results }: TestResultsProps) {
                   </div>
                 )}
                 {test.apiResponse && (
-                  <div className="api-response-section" style={{ 
-                    marginTop: '15px', 
-                    padding: '15px', 
-                    backgroundColor: '#f8f9fa', 
+                  <div className="api-response-section" style={{
+                    marginTop: '15px',
+                    padding: '15px',
+                    backgroundColor: '#f8f9fa',
                     borderRadius: '8px',
                     border: '1px solid #dee2e6'
                   }}>
                     <h4 style={{ marginBottom: '10px', fontSize: '14px', color: '#495057' }}>
                       🌐 API Test Details
                     </h4>
-                    
+
                     {/* Request */}
                     <div style={{ marginBottom: '15px' }}>
                       <strong style={{ fontSize: '13px', color: '#495057' }}>Request:</strong>
@@ -273,9 +272,9 @@ function TestResults({ results }: TestResultsProps) {
                         <strong style={{ fontSize: '13px', color: '#495057' }}>Response:</strong>
                         <div style={{ marginLeft: '10px', fontSize: '12px' }}>
                           <div>
-                            Status: <span style={{ 
-                              fontWeight: 'bold', 
-                              color: test.apiResponse.response.status >= 200 && test.apiResponse.response.status < 300 ? '#28a745' : '#dc3545' 
+                            Status: <span style={{
+                              fontWeight: 'bold',
+                              color: '#000'
                             }}>
                               {test.apiResponse.response.status} {test.apiResponse.response.statusText}
                             </span>
@@ -283,14 +282,14 @@ function TestResults({ results }: TestResultsProps) {
                           <div style={{ marginTop: '3px' }}>Size: {(test.apiResponse.response.size / 1024).toFixed(2)} KB</div>
                           {test.apiResponse.response.headers && Object.keys(test.apiResponse.response.headers).length > 0 && (
                             <details style={{ marginTop: '5px' }}>
-                              <summary style={{ cursor: 'pointer', color: '#28a745', fontWeight: 'bold' }}>▶ Response Headers</summary>
+                              <summary style={{ cursor: 'pointer', color: '#000', fontWeight: 'bold' }}>▶ Response Headers</summary>
                               <pre style={{ fontSize: '11px', marginTop: '5px', padding: '8px', backgroundColor: '#f8f9fa', borderRadius: '4px', overflow: 'auto', maxHeight: '150px', border: '1px solid #dee2e6', color: '#212529' }}>
                                 {JSON.stringify(test.apiResponse.response.headers, null, 2)}
                               </pre>
                             </details>
                           )}
                           <details open style={{ marginTop: '5px' }}>
-                            <summary style={{ cursor: 'pointer', color: '#28a745', fontWeight: 'bold' }}>▼ Response Body (click to collapse)</summary>
+                            <summary style={{ cursor: 'pointer', color: '#000', fontWeight: 'bold' }}>▼ Response Body (click to collapse)</summary>
                             <pre style={{ fontSize: '11px', marginTop: '5px', padding: '8px', backgroundColor: '#f8f9fa', borderRadius: '4px', overflow: 'auto', maxHeight: '200px', border: '1px solid #dee2e6', color: '#212529' }}>
                               {test.apiResponse.response.data ? JSON.stringify(test.apiResponse.response.data, null, 2) : 'No response data'}
                             </pre>
