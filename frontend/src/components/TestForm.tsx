@@ -127,7 +127,7 @@ function TestForm({
               </span>
             </div>
           )}
-          {step1Expanded && (
+          {step1Expanded || !aiEnabled && (
             <>
               <div className="form-group">
                 <label htmlFor="url">
