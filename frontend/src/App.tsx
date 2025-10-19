@@ -279,64 +279,43 @@ function App() {
           {currentView === 'testing' && (
             <motion.div
               key="testing"
-              initial={{ opacity: 0, x: -50 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: 50 }}
+              className="testing-container"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
               transition={{ duration: 0.3 }}
             >
-              {aiEnabled && (
-                <div className="nlp-input-section">
-                  <h3>🗣️ Natural Language Test Generation</h3>
-                  <textarea
-                    className="nlp-input"
-                    placeholder="Describe your tests in plain English: 'Test the login flow with invalid credentials and check error messages'"
-                    value={nlpDescription}
-                    onChange={(e) => setNlpDescription(e.target.value)}
-                    rows={3}
-                  />
-
-                  <div className="ai-options-grid">
-                    {Object.entries(aiOptions).map(([key, value]) => (
-                      <button
-                        key={key}
-                        className={`ai-toggle ${value ? 'enabled' : ''}`}
-                        onClick={() => toggleAIOption(key as keyof typeof aiOptions)}
-                      >
-                        {key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase())}: {value ? 'ON' : 'OFF'}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              )}
-
               <TestForm
                 onTestStart={handleTestStart}
                 onTestComplete={handleTestComplete}
                 aiOptions={aiEnabled ? aiOptions : undefined}
                 nlpDescription={nlpDescription}
+                onNlpChange={setNlpDescription}
+                onAiOptionToggle={toggleAIOption}
+                aiEnabled={aiEnabled}
               />
 
               {loading && (
                 <motion.div
-                  className="loading-ai"
-                  initial={{ opacity: 0, scale: 0.9 }}
-                  animate={{ opacity: 1, scale: 1 }}
+                  className="loading-section"
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.3 }}
                 >
-                  <div className="ai-spinner"></div>
-                  <div className="loading-status">
-                    🤖 AI Testing in Progress...
-                  </div>
-                  <div className="loading-substatus">
-                    Running comprehensive analysis with machine learning
+                  <div className="loading-spinner"></div>
+                  <div className="loading-text">
+                    <h3>Testing in Progress</h3>
+                    <p>Running comprehensive analysis with AI</p>
                   </div>
                 </motion.div>
               )}
 
               {results && !loading && (
                 <motion.div
-                  initial={{ opacity: 0, y: 50 }}
+                  className="results-section"
+                  initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.5 }}
+                  transition={{ duration: 0.3, delay: 0.1 }}
                 >
                   <TestResults results={results} />
                 </motion.div>
@@ -347,9 +326,9 @@ function App() {
           {currentView === 'dashboard' && (
             <motion.div
               key="dashboard"
-              initial={{ opacity: 0, x: 50 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -50 }}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
               transition={{ duration: 0.3 }}
             >
               <AIDashboard
@@ -374,5 +353,5 @@ function App() {
   )
 }
 
-export default App
+export default App;
 
