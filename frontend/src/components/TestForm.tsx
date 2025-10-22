@@ -28,8 +28,21 @@ function TestForm({
   const [step1Expanded, setStep1Expanded] = useState(false)
   const [step2Expanded, setStep2Expanded] = useState(false)
 
+  // AI option descriptions
+  const aiOptionDescriptions: Record<string, string> = {
+    useNLP: 'Uses Natural Language Processing to understand and generate tests from plain English descriptions',
+    generateEdgeCases: 'Automatically generates edge cases and boundary conditions to test unusual scenarios',
+    generateTestData: 'Creates realistic test data including mock users, inputs, and scenarios using AI',
+    securityScan: 'Scans for common security vulnerabilities like XSS, CSRF, SQL injection, and more',
+    enhancedA11y: 'Performs comprehensive accessibility testing beyond WCAG standards using AI analysis',
+    visualAI: 'Uses computer vision to detect visual regressions and UI inconsistencies',
+    predictiveAnalytics: 'Predicts potential failures and performance issues before they occur',
+    realtimeMonitoring: 'Monitors test execution in real-time with live insights and recommendations',
+    selfHealing: 'Automatically repairs broken tests by detecting and updating changed selectors'
+  }
+
   const handleSubmit = async (e: FormEvent) => {
-    
+
     e.preventDefault()
     setStep1Expanded(false)
     setStep2Expanded(false)
@@ -232,6 +245,7 @@ function TestForm({
             </div>
             {step2Expanded && (
               <>
+                <p className="options-label">Add Description</p>
                 <div className="form-group">
                   <textarea
                     id="nlpInput"
@@ -243,22 +257,34 @@ function TestForm({
                   />
 
                 </div>
+                <p className="options-label">Use AI Options</p>
 
                 <div className="ai-options">
-                  <label className="options-label">Use AI to generate test scenarios</label>
                   <div className="ai-options-grid">
                     {Object.entries(aiOptions).map(([key, value]) => (
-                      <button
-                        key={key}
-                        type="button"
-                        className={`ai-option-toggle ${value ? 'active' : ''}`}
-                        onClick={() => onAiOptionToggle(key)}
-                      >
-                        <span className="toggle-indicator"></span>
-                        <span className="toggle-label">
-                          {key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase())}
-                        </span>
-                      </button>
+                      <div key={key} className="ai-option-wrapper">
+                        <button
+                          type="button"
+                          className={`ai-option-toggle ${value ? 'active' : ''}`}
+                          onClick={() => onAiOptionToggle(key)}
+                          aria-label={`${key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase())} - ${aiOptionDescriptions[key]}`}
+                        >
+                          <span className="toggle-indicator"></span>
+                          <span className="toggle-label">
+                            {key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase())}
+                          </span>
+                          <span className="info-icon" aria-hidden="true">
+                            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                              <circle cx="8" cy="8" r="7" stroke="currentColor" strokeWidth="1.5" />
+                              <path d="M8 7V11" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+                              <circle cx="8" cy="5" r="0.5" fill="currentColor" />
+                            </svg>
+                          </span>
+                        </button>
+                        <div className="ai-option-tooltip" role="tooltip" aria-hidden="true">
+                          {aiOptionDescriptions[key]}
+                        </div>
+                      </div>
                     ))}
                   </div>
                 </div>
