@@ -12,6 +12,13 @@ function TestResults({ results }: TestResultsProps) {
     ? Math.round((results.testsPassed / results.totalTests) * 100)
     : 0
 
+  // Sort tests: passed tests first, then failed tests
+  const sortedDetails = [...results.details].sort((a, b) => {
+    if (a.status === 'passed' && b.status !== 'passed') return -1
+    if (a.status !== 'passed' && b.status === 'passed') return 1
+    return 0
+  })
+
   return (
     <div className="test-results-container">
       <div className="results-header">
@@ -140,32 +147,7 @@ function TestResults({ results }: TestResultsProps) {
             </div>
           )}
 
-          {/* Console */}
-          {results.devTools.console && (results.devTools.console.errors.length > 0 || results.devTools.console.warnings.length > 0) && (
-            <div className="devtools-card">
-              <h4>📋 Console Messages</h4>
-              {results.devTools.console.errors.length > 0 && (
-                <div className="console-errors">
-                  <h5 style={{ color: '#dc3545' }}>❌ Errors ({results.devTools.console.errors.length})</h5>
-                  <ul>
-                    {results.devTools.console.errors.slice(0, 5).map((error, idx) => (
-                      <li key={idx} style={{ fontSize: '12px', color: '#dc3545' }}>{error}</li>
-                    ))}
-                  </ul>
-                </div>
-              )}
-              {results.devTools.console.warnings.length > 0 && (
-                <div className="console-warnings">
-                  <h5 style={{ color: '#ffc107' }}>⚠️ Warnings ({results.devTools.console.warnings.length})</h5>
-                  <ul>
-                    {results.devTools.console.warnings.slice(0, 5).map((warning, idx) => (
-                      <li key={idx} style={{ fontSize: '12px', color: '#856404' }}>{warning}</li>
-                    ))}
-                  </ul>
-                </div>
-              )}
-            </div>
-          )}
+
         </div>
       )}
 
@@ -173,7 +155,7 @@ function TestResults({ results }: TestResultsProps) {
         <h3>📝 Test Details</h3>
         {results.details.length > 0 ? (
           <ul className="test-list">
-            {results.details.map((test, index) => (
+            {sortedDetails.map((test, index) => (
               <li key={index} className={`test-item ${test.status}`}>
                 <div className="test-item-header">
                   <span className="test-icon">
@@ -328,6 +310,33 @@ function TestResults({ results }: TestResultsProps) {
               <li key={index} className="error-item">{error}</li>
             ))}
           </ul>
+        </div>
+      )}
+
+      {/* Console */}
+      {results.devTools && results.devTools.console && (results.devTools.console.errors.length > 0 || results.devTools.console.warnings.length > 0) && (
+        <div className='console-section'>
+          <h3>📋 Console Messages</h3>
+          {results.devTools.console.errors.length > 0 && (
+            <div className="console-errors">
+              <h4 style={{ color: '#dc3545' }}>❌ Errors ({results.devTools.console.errors.length})</h4>
+              <ul>
+                {results.devTools.console.errors.slice(0, 5).map((error, idx) => (
+                  <li key={idx} style={{ fontSize: '12px', color: '#dc3545' }}>{error}</li>
+                ))}
+              </ul>
+            </div>
+          )}
+          {results.devTools.console.warnings.length > 0 && (
+            <div className="console-warnings">
+              <h4 style={{ color: '#ffc107' }}>⚠️ Warnings ({results.devTools.console.warnings.length})</h4>
+              <ul>
+                {results.devTools.console.warnings.slice(0, 5).map((warning, idx) => (
+                  <li key={idx} style={{ fontSize: '12px', color: '#856404' }}>{warning}</li>
+                ))}
+              </ul>
+            </div>
+          )}
         </div>
       )}
     </div>

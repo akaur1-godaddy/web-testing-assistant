@@ -292,6 +292,7 @@
 .console-warnings ul {
   list-style: none;
   margin-top: 0.5rem;
+  margin-left: 0.8rem;
 }
 
 .console-errors li,
@@ -301,6 +302,9 @@
   border-radius: 4px;
   background: #f8f9fa;
   font-family: 'Courier New', monospace;
+  font-size: 0.9rem;
+  text-wrap: wrap;
+  word-wrap: break-word;
 }
 
 @media (max-width: 768px) {
@@ -318,3 +322,12 @@
   }
 }
 
+.console-section {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  /* padding: 1.5rem; */
+  /* background: linear-gradient(135deg, #f5f7fa 0%, #e8eef5 100%); */
+  /* border-radius: 12px; */
+  /* border: 2px solid black; */
+}
