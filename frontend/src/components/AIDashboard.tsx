@@ -9,10 +9,10 @@ interface AIDashboardProps {
   predictiveInsights?: any;
 }
 
-const AIDashboard: React.FC<AIDashboardProps> = ({ 
-  testResults, 
-  realTimeData, 
-  predictiveInsights 
+const AIDashboard: React.FC<AIDashboardProps> = ({
+  testResults,
+  realTimeData,
+  predictiveInsights
 }) => {
   const [activeTab, setActiveTab] = useState('overview');
   const [aiInsights, setAIInsights] = useState<AIInsight[]>([]);
@@ -29,7 +29,7 @@ const AIDashboard: React.FC<AIDashboardProps> = ({
   useEffect(() => {
     // Initialize WebSocket for real-time data
     const ws = new WebSocket('ws://localhost:5001/ai-insights');
-    
+
     ws.onopen = () => {
       console.log('🔌 AI Dashboard connected to real-time stream');
       setWebsocket(ws);
@@ -222,7 +222,7 @@ const AIDashboard: React.FC<AIDashboardProps> = ({
     g.append("path")
       .datum(data)
       .attr("fill", "none")
-      .attr("stroke", "#00ff88")
+      .attr("stroke", "#000")
       .attr("stroke-width", 2)
       .attr("d", line);
 
@@ -234,8 +234,8 @@ const AIDashboard: React.FC<AIDashboardProps> = ({
       .attr("cx", d => xScale(d.time))
       .attr("cy", d => yScale(d.loadTime))
       .attr("r", 4)
-      .attr("fill", "#00ff88")
-      .on("mouseover", function(event, d) {
+      .attr("fill", "#000")
+      .on("mouseover", function (event, d) {
         // Add tooltip
         const tooltip = d3.select("body").append("div")
           .attr("class", "tooltip")
@@ -248,7 +248,7 @@ const AIDashboard: React.FC<AIDashboardProps> = ({
           .style("left", (event.pageX + 10) + "px")
           .style("top", (event.pageY - 28) + "px");
       })
-      .on("mouseout", function() {
+      .on("mouseout", function () {
         d3.selectAll(".tooltip").remove();
       });
   };
@@ -288,7 +288,7 @@ const AIDashboard: React.FC<AIDashboardProps> = ({
 
     const colorScale = d3.scaleOrdinal()
       .domain(['low', 'medium', 'high', 'critical'])
-      .range(['#28a745', '#ffc107', '#fd7e14', '#dc3545']);
+      .range(['#d1d5db', '#9ca3af', '#6b7280', '#000']);
 
     // Add bars
     g.selectAll(".bar")
@@ -330,8 +330,8 @@ const AIDashboard: React.FC<AIDashboardProps> = ({
     // Sample heatmap data
     const testCategories = ['Login', 'Navigation', 'Forms', 'Performance', 'Security'];
     const timeSlots = ['00:00', '06:00', '12:00', '18:00'];
-    
-    const heatmapData = testCategories.flatMap(category => 
+
+    const heatmapData = testCategories.flatMap(category =>
       timeSlots.map(time => ({
         category,
         time,
@@ -349,7 +349,7 @@ const AIDashboard: React.FC<AIDashboardProps> = ({
       .range([0, height])
       .padding(0.05);
 
-    const colorScale = d3.scaleSequential(d3.interpolateRdYlGn)
+    const colorScale = d3.scaleSequential(d3.interpolateGreys)
       .domain([0, 1]);
 
     // Add rectangles
@@ -421,7 +421,12 @@ const AIDashboard: React.FC<AIDashboardProps> = ({
       .data(nodes)
       .enter().append("circle")
       .attr("r", (d: any) => d.value)
-      .attr("fill", (d: any) => d3.schemeCategory10[d.group % 10])
+      .attr("fill", (d: any) => {
+        const grays = ['#1a1a1a', '#2d2d2d', '#6b7280', '#9ca3af', '#d1d5db'];
+        return grays[d.group % grays.length];
+      })
+      .attr("stroke", "#000")
+      .attr("stroke-width", 1)
       .call(d3.drag<SVGCircleElement, any>()
         .on("start", dragstarted)
         .on("drag", dragged)
@@ -501,7 +506,7 @@ const AIDashboard: React.FC<AIDashboardProps> = ({
   const getSeverityColor = (severity: string) => {
     const colors = {
       critical: '#dc3545',
-      high: '#fd7e14', 
+      high: '#fd7e14',
       medium: '#ffc107',
       low: '#28a745',
     };
@@ -511,17 +516,10 @@ const AIDashboard: React.FC<AIDashboardProps> = ({
   return (
     <div className="ai-dashboard">
       <div className="dashboard-header">
-        <motion.h1 
-          className="dashboard-title"
-          initial={{ opacity: 0, y: -50 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8 }}
-        >
-          🤖 AI Testing Intelligence Dashboard
-        </motion.h1>
-        
+
+
         <div className="tab-navigation">
-          {['overview', 'insights', 'predictions', 'performance', 'security'].map(tab => (
+          {['overview', 'insights', 'predictions', 'performance', 'security', 'visual'].map(tab => (
             <button
               key={tab}
               className={`tab-button ${activeTab === tab ? 'active' : ''}`}
@@ -674,7 +672,7 @@ const AIDashboard: React.FC<AIDashboardProps> = ({
                       </div>
                       <div className="stat-item">
                         <div className="stat-value">
-                          {testResults.aiMetadata?.confidenceScore ? 
+                          {testResults.aiMetadata?.confidenceScore ?
                             Math.round(testResults.aiMetadata.confidenceScore * 100) + '%' : 'N/A'}
                         </div>
                         <div className="stat-label">AI Confidence</div>
@@ -892,10 +890,154 @@ const AIDashboard: React.FC<AIDashboardProps> = ({
               </div>
             </div>
           )}
+
+          {activeTab === 'visual' && (
+            <div className="dashboard-grid">
+              {/* Visual Analysis Summary */}
+              <div className="dashboard-card" style={{ gridColumn: 'span 2' }}>
+                <h3 className="card-title">👁️ Visual AI Analysis</h3>
+                {testResults?.visualAnalysis ? (
+                  <div className="visual-analysis">
+                    {/* Overall Status */}
+                    <div className="visual-summary">
+                      <div className="visual-stat">
+                        <div className="stat-value">
+                          {testResults.visualAnalysis.overallStatus === 'passed' ? '✅' : '⚠️'}
+                        </div>
+                        <div className="stat-label">Overall Status</div>
+                      </div>
+                      <div className="visual-stat">
+                        <div className="stat-value">
+                          {testResults.visualAnalysis.issuesDetected || 0}
+                        </div>
+                        <div className="stat-label">Issues Detected</div>
+                      </div>
+                      <div className="visual-stat">
+                        <div className="stat-value">
+                          {testResults.visualAnalysis.confidenceScore
+                            ? Math.round(testResults.visualAnalysis.confidenceScore * 100) + '%'
+                            : 'N/A'}
+                        </div>
+                        <div className="stat-label">Confidence</div>
+                      </div>
+                    </div>
+
+                    {/* Visual Issues */}
+                    {testResults.visualAnalysis.issues && testResults.visualAnalysis.issues.length > 0 ? (
+                      <div className="visual-issues-list">
+                        <h4>🎨 Detected Visual Issues</h4>
+                        {testResults.visualAnalysis.issues.map((issue: any, index: number) => (
+                          <div key={index} className={`visual-issue-item severity-${issue.severity || 'medium'}`}>
+                            <div className="issue-header">
+                              <h5>{issue.type || 'Visual Issue'}</h5>
+                              <span className={`severity-badge severity-${issue.severity || 'medium'}`}>
+                                {issue.severity || 'medium'}
+                              </span>
+                            </div>
+                            <p>{issue.description}</p>
+                            {issue.location && (
+                              <div className="issue-location">
+                                <strong>Location:</strong> {issue.location}
+                              </div>
+                            )}
+                            {issue.suggestion && (
+                              <div className="issue-suggestion">
+                                <strong>💡 Suggestion:</strong> {issue.suggestion}
+                              </div>
+                            )}
+                            {issue.screenshot && (
+                              <div className="issue-screenshot">
+                                <img src={issue.screenshot} alt="Visual issue" style={{ maxWidth: '100%', borderRadius: '8px' }} />
+                              </div>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="no-visual-issues">
+                        ✅ No visual issues detected. Your UI looks great!
+                      </div>
+                    )}
+
+                    {/* Visual Metrics */}
+                    {testResults.visualAnalysis.metrics && (
+                      <div className="visual-metrics">
+                        <h4>📊 Visual Metrics</h4>
+                        <div className="metrics-grid">
+                          {Object.entries(testResults.visualAnalysis.metrics).map(([metric, value]: [string, any]) => (
+                            <div key={metric} className="metric-card">
+                              <div className="metric-name">
+                                {metric.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase())}
+                              </div>
+                              <div className="metric-value">
+                                {typeof value === 'number' ? value.toFixed(2) : value}
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Screenshots */}
+                    {testResults.details && testResults.details.some((d: any) => d.screenshot) && (
+                      <div className="screenshots-section">
+                        <h4>📸 Test Screenshots</h4>
+                        <div className="screenshots-grid">
+                          {testResults.details
+                            .filter((d: any) => d.screenshot)
+                            .map((test: any, index: number) => (
+                              <div key={index} className="screenshot-card">
+                                <div className="screenshot-title">
+                                  {test.status === 'passed' ? '✅' : '❌'} {test.name}
+                                </div>
+                                <img
+                                  src={test.screenshot}
+                                  alt={test.name}
+                                  style={{
+                                    width: '100%',
+                                    borderRadius: '8px',
+                                    border: `2px solid ${test.status === 'passed' ? '#28a745' : '#dc3545'}`
+                                  }}
+                                />
+                              </div>
+                            ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Recommendations */}
+                    {testResults.visualAnalysis.recommendations && testResults.visualAnalysis.recommendations.length > 0 && (
+                      <div className="visual-recommendations">
+                        <h4>💡 Visual Improvement Recommendations</h4>
+                        <ul>
+                          {testResults.visualAnalysis.recommendations.map((rec: string, index: number) => (
+                            <li key={index}>{rec}</li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  <div className="no-data">
+                    <div style={{ fontSize: '48px', marginBottom: '1rem' }}>👁️</div>
+                    <h3>No Visual Analysis Available</h3>
+                    <p>Enable Visual AI in the test configuration to see detailed visual analysis, including:</p>
+                    <ul style={{ textAlign: 'left', maxWidth: '400px', margin: '1rem auto' }}>
+                      <li>Layout and alignment issues</li>
+                      <li>Color contrast problems</li>
+                      <li>Visual regressions</li>
+                      <li>Responsive design issues</li>
+                      <li>UI consistency checks</li>
+                    </ul>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
         </motion.div>
       </AnimatePresence>
 
-      <button 
+      <button
         className="floating-action"
         onClick={() => window.location.reload()}
         title="Refresh Dashboard"

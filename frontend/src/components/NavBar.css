@@ -1,0 +1,457 @@
+.navbar {
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    width: 100%;
+    background: linear-gradient(90deg, #ffffff 0%, #fafafa 100%);
+    border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+}
+
+.navbar-container {
+    width: 100%;
+    margin: 0 auto;
+    padding: 0.875rem 2rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 2rem;
+    box-sizing: border-box;
+}
+
+/* Left Section: Logo & Brand */
+.navbar-left {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    flex: 0 0 auto;
+}
+
+.navbar-logo {
+    font-size: 2.2rem;
+    line-height: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 45px;
+    height: 45px;
+    background: linear-gradient(135deg, #f5f5f5 0%, #efefef 100%);
+    border-radius: 12px;
+    animation: logoFloat 3s ease-in-out infinite;
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.navbar-logo:hover {
+    transform: scale(1.1);
+    background: linear-gradient(135deg, #efefef 0%, #e0e0e0 100%);
+}
+
+@keyframes logoFloat {
+
+    0%,
+    100% {
+        transform: translateY(0px);
+    }
+
+    50% {
+        transform: translateY(-4px);
+    }
+}
+
+.navbar-brand {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.navbar-title {
+    font-size: 1.5rem;
+    font-weight: 900;
+    margin: 0;
+    color: #1a1a1a;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    letter-spacing: -0.8px;
+}
+
+/* Remove badge styling */
+.navbar-badge {
+    display: none !important;
+}
+
+/* Center Section: Navigation Toggles */
+.navbar-center {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex: 1;
+    gap: 0;
+}
+
+.nav-toggle {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 0.7rem 1.6rem;
+    background: transparent;
+    border: 1.5px solid #d0d0d0;
+    color: #666;
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    white-space: nowrap;
+    position: relative;
+}
+
+.nav-toggle:first-child {
+    border-radius: 20px 0 0 20px;
+    border-right: none;
+}
+
+.nav-toggle:last-child {
+    border-radius: 0 20px 20px 0;
+    border-left: none;
+}
+
+.nav-toggle:hover:not(.active) {
+    background: rgba(0, 0, 0, 0.02);
+    color: #333;
+    border-color: #999;
+}
+
+.nav-toggle.active {
+    background: #000;
+    color: #ffffff;
+    border-color: #000;
+}
+
+.nav-toggle.active:first-child {
+    border-right: 1.5px solid #000;
+}
+
+.nav-toggle.active:last-child {
+    border-left: 1.5px solid #000;
+}
+
+.nav-toggle.active .nav-toggle-icon {
+    animation: toggleIconBounce 2s ease-in-out infinite;
+}
+
+@keyframes toggleIconBounce {
+
+    0%,
+    100% {
+        transform: scale(1);
+    }
+
+    50% {
+        transform: scale(1.15);
+    }
+}
+
+.nav-toggle-icon {
+    font-size: 1.1rem;
+    line-height: 1;
+    transition: all 0.3s ease;
+}
+
+.nav-toggle-text {
+    font-weight: 600;
+    letter-spacing: 0.2px;
+}
+
+/* Right Section: AI & Voice Toggles */
+.navbar-right {
+    display: flex;
+    align-items: center;
+    flex: 0 0 auto;
+}
+
+.toggle-group {
+    display: flex;
+    gap: 2rem;
+    align-items: center;
+}
+
+.toggle-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.toggle-switch {
+    position: relative;
+    display: inline-block;
+    cursor: pointer;
+}
+
+.toggle-switch input {
+    display: none;
+}
+
+.toggle-track {
+    position: relative;
+    width: 52px;
+    height: 28px;
+    background: #e0e0e0;
+    border-radius: 14px;
+    transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+
+.toggle-thumb {
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    width: 24px;
+    height: 24px;
+    background: white;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.95rem;
+    transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.12);
+}
+
+.toggle-name {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #666;
+    transition: all 0.3s ease;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+/* Toggle Checked State */
+.toggle-switch input:checked+.toggle-track {
+    background: #1a1a1a;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2), inset 0 1px 3px rgba(0, 0, 0, 0.2);
+}
+
+.toggle-switch input:checked+.toggle-track .toggle-thumb {
+    left: calc(100% - 26px);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
+}
+
+.toggle-switch input:checked~.toggle-name {
+    color: #1a1a1a;
+    font-weight: 700;
+}
+
+/* Toggle Hover */
+.toggle-switch:hover .toggle-track {
+    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.12), 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.toggle-switch input:checked:hover+.toggle-track {
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.25), inset 0 1px 3px rgba(0, 0, 0, 0.2);
+}
+
+/* Toggle Focus */
+.toggle-switch input:focus+.toggle-track {
+    outline: 2px solid rgba(0, 0, 0, 0.1);
+    outline-offset: 2px;
+}
+
+/* Responsive Design */
+@media (max-width: 1200px) {
+    .navbar-container {
+        padding: 0.8rem 1.5rem;
+        gap: 1rem;
+    }
+
+    .nav-toggle {
+        padding: 0.6rem 1.3rem;
+        font-size: 0.85rem;
+    }
+
+    .toggle-group {
+        gap: 1.5rem;
+    }
+}
+
+@media (max-width: 968px) {
+    .navbar-container {
+        flex-wrap: wrap;
+        padding: 0.75rem 1rem;
+        gap: 1rem;
+    }
+
+    .navbar-left {
+        flex: 0 0 auto;
+        gap: 1rem;
+    }
+
+    .navbar-center {
+        flex: 1 100%;
+        order: 2;
+    }
+
+    .navbar-right {
+        flex: 0 0 auto;
+        order: 3;
+    }
+
+    .nav-toggle {
+        padding: 0.6rem 1.1rem;
+        font-size: 0.8rem;
+    }
+
+    .toggle-group {
+        gap: 1.5rem;
+    }
+}
+
+@media (max-width: 640px) {
+    .navbar-container {
+        flex-wrap: wrap;
+        padding: 0.75rem 1rem;
+        gap: 0.75rem;
+    }
+
+    .navbar-left {
+        flex: 0 0 auto;
+        gap: 1rem;
+    }
+
+    .navbar-logo {
+        width: 40px;
+        height: 40px;
+        font-size: 2rem;
+    }
+
+    .navbar-title {
+        font-size: 1.3rem;
+    }
+
+    .navbar-center {
+        flex: 1 100%;
+        order: 2;
+        gap: 0;
+    }
+
+    .nav-toggle {
+        padding: 0.6rem 1rem;
+        font-size: 0.75rem;
+        flex: 1;
+    }
+
+    .nav-toggle:first-child {
+        border-radius: 16px 0 0 16px;
+    }
+
+    .nav-toggle:last-child {
+        border-radius: 0 16px 16px 0;
+    }
+
+    .nav-toggle-text {
+        display: none;
+    }
+
+    .nav-toggle-icon {
+        font-size: 1.2rem;
+    }
+
+    .navbar-right {
+        flex: 1 100%;
+        order: 3;
+        justify-content: center;
+    }
+
+    .toggle-group {
+        gap: 1.5rem;
+    }
+
+    .toggle-track {
+        width: 48px;
+        height: 26px;
+    }
+
+    .toggle-thumb {
+        width: 22px;
+        height: 22px;
+        font-size: 0.85rem;
+    }
+
+    .toggle-switch input:checked+.toggle-track .toggle-thumb {
+        left: calc(100% - 24px);
+    }
+
+    .toggle-name {
+        font-size: 0.65rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .navbar-container {
+        flex-wrap: wrap;
+        padding: 0.6rem 0.75rem;
+        gap: 0.5rem;
+    }
+
+    .navbar-left {
+        gap: 0.75rem;
+        flex: 1 100%;
+    }
+
+    .navbar-logo {
+        width: 36px;
+        height: 36px;
+        font-size: 1.8rem;
+    }
+
+    .navbar-title {
+        font-size: 1.1rem;
+    }
+
+    .navbar-center {
+        flex: 1 100%;
+        order: 2;
+    }
+
+    .nav-toggle {
+        padding: 0.5rem 0.8rem;
+        font-size: 0.7rem;
+    }
+
+    .nav-toggle-icon {
+        font-size: 1.1rem;
+    }
+
+    .navbar-right {
+        flex: 1 100%;
+        order: 3;
+    }
+
+    .toggle-group {
+        gap: 1rem;
+    }
+
+    .toggle-track {
+        width: 44px;
+        height: 24px;
+    }
+
+    .toggle-thumb {
+        width: 20px;
+        height: 20px;
+        font-size: 0.75rem;
+    }
+
+    .toggle-switch input:checked+.toggle-track .toggle-thumb {
+        left: calc(100% - 22px);
+    }
+
+    .toggle-name {
+        display: none;
+    }
+}
