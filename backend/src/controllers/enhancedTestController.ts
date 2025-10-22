@@ -15,6 +15,11 @@ import { RealtimeAI } from '../services/realtimeAI.js';
 import { TestDataAI } from '../services/testDataAI.js';
 import { EnhancedAccessibilityAI } from '../services/enhancedAccessibilityAI.js';
 import { AIFailureAnalyzer } from '../services/aiFailureAnalyzer.js';
+import { ElementDetector } from '../services/ElementDetector.js';
+import { FunctionalTestCaseGenerator } from '../services/FunctionalTestCaseGenerator.js';
+import { AITestCaseGenerator } from '../services/AITestCaseGenerator.js';
+import { FormTestValidator } from '../services/FormTestValidator.js';
+import { UniversalTestOrchestrator } from '../services/UniversalTestOrchestrator.js';
 
 /**
  * Enhanced Test Controller with AI Integration
@@ -40,7 +45,7 @@ export class EnhancedTestController {
       const testType = req.body.testType || 'comprehensive';
       const nlpDescription = req.body.nlpDescription || '';
       console.log('🎯 Final URL being used for testing:', url);
-      
+
       // Parse AI options from FormData string
       let aiOptions: any = {
         securityScan: true,
@@ -51,7 +56,10 @@ export class EnhancedTestController {
         selfHealing: true,
         generateTestData: true,
         generateEdgeCases: true,
-        useNLP: false
+        useNLP: false,
+        functionalAI: true, // Added functionalAI flag
+        elementDetector: true, // Added elementDetector flag
+        functionalTestCaseGenerator: true, // Added functionalTestCaseGenerator flag
       };
 
       if (req.body.aiOptions) {
@@ -168,15 +176,96 @@ export class EnhancedTestController {
 
       await testRunner.navigateToPage(url);
 
+      let testCases: TestCase[] = [];
+      let aiInsights: any = {};
+      let testSource = 'ai-generated';
+      let ctaTests: TestCase[] = [];
+      let detectedElements: any[] = [];
+
+      // Intelligent CTA Detection and Test Generation
+      if (aiOptions?.functionalAI || aiOptions?.elementDetector) {
+        try {
+          console.log('🎯 Starting intelligent CTA detection...');
+          const generator = new FunctionalTestCaseGenerator(testRunner.getPage());
+          ctaTests = await generator.generateTestCases();
+          console.log(`✅ Generated ${ctaTests.length} functional tests from detected CTAs`);
+
+          // AI-powered contextual test generation
+          const aiGenerator = new AITestCaseGenerator();
+          const pageTitle = await testRunner.getPage().title();
+          const pageUrl = await testRunner.getPage().url();
+          const hasAuthElements = ctaTests.some(t => t.name?.toLowerCase().includes('login'));
+
+          const pageAnalysis = {
+            url: pageUrl,
+            title: pageTitle,
+            forms: [],
+            buttons: [],
+            inputs: [],
+            hasAuth: hasAuthElements,
+            pageType: 'unknown',
+          };
+
+          const aiTestSuite = await aiGenerator.generateContextualTests(pageAnalysis);
+          console.log('✅ AI-generated tests:');
+          console.log(`   - Login: ${aiTestSuite.loginTests.length}`);
+          console.log(`   - Form Validation: ${aiTestSuite.formValidationTests.length}`);
+          console.log(`   - Security: ${aiTestSuite.securityTests.length}`);
+          console.log(`   - User Journeys: ${aiTestSuite.userJourneyTests.length}`);
+          console.log(`   - Accessibility: ${aiTestSuite.accessibilityTests.length}`);
+
+          // Add form validation tests
+          const detector = new ElementDetector(testRunner.getPage());
+          const elements = await detector.detectAllInteractiveElements();
+          const formInputs = elements.filter(e => ['input', 'select', 'textarea'].includes(e.elementType));
+          const formValidator = new FormTestValidator(testRunner.getPage());
+          const formValidationTests = await formValidator.generateFormValidationTests(formInputs);
+
+          // Combine all AI-generated tests
+          ctaTests.push(
+            ...aiTestSuite.loginTests,
+            ...aiTestSuite.formValidationTests,
+            ...aiTestSuite.securityTests,
+            ...aiTestSuite.userJourneyTests,
+            ...aiTestSuite.accessibilityTests,
+            ...formValidationTests
+          );
+
+          detectedElements = elements.map(e => ({
+            type: e.elementType,
+            text: e.text?.slice(0, 50),
+            confidence: e.confidence
+          }));
+          console.log(`✅ Detected ${elements.length} interactive elements`);
+
+          // Add to insights
+          aiInsights.functional = {
+            elementsDetected: elements.length,
+            testsCTA: ctaTests.length,
+            elementBreakdown: {
+              buttons: elements.filter(e => e.elementType === 'button').length,
+              inputs: elements.filter(e => ['input', 'select', 'textarea'].includes(e.elementType)).length,
+              forms: elements.filter(e => e.elementType === 'form').length,
+              links: elements.filter(e => e.elementType === 'link').length,
+            },
+            aiTestBreakdown: {
+              loginTests: aiTestSuite.loginTests.length,
+              formValidation: aiTestSuite.formValidationTests.length,
+              securityTests: aiTestSuite.securityTests.length,
+              userJourney: aiTestSuite.userJourneyTests.length,
+              accessibility: aiTestSuite.accessibilityTests.length,
+            }
+          };
+        } catch (err) {
+          console.warn('⚠️  CTA detection step failed, continuing without it:', err);
+        }
+      }
+
       // Handle authentication
       if (username && password) {
         console.log('🔐 Attempting login...');
         await testRunner.login(username, password);
       }
-
-      let testCases: TestCase[] = [];
-      let aiInsights: any = {};
-      let testSource = 'ai-generated';
 
       // Generate tests based on type and options
       if (nlpDescription && aiOptions?.useNLP) {
@@ -228,6 +317,11 @@ export class EnhancedTestController {
           const edgeCases = await nlpGenerator.generateEdgeCases(testCases);
           testCases.push(...edgeCases);
         }
+      }
+
+      // Prepend CTA tests so they run first
+      if (ctaTests.length > 0) {
+        testCases = [...ctaTests, ...testCases];
       }
 
       // AI-powered test data generation
