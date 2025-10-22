@@ -21,7 +21,7 @@ import { AIFailureAnalyzer } from '../services/aiFailureAnalyzer.js';
  * Orchestrates all AI services for comprehensive testing
  */
 export class EnhancedTestController {
-  
+
   /**
    * Run comprehensive AI-powered tests
    */
@@ -53,7 +53,7 @@ export class EnhancedTestController {
         generateEdgeCases: true,
         useNLP: false
       };
-      
+
       if (req.body.aiOptions) {
         try {
           const parsedOptions = JSON.parse(req.body.aiOptions);
@@ -62,7 +62,7 @@ export class EnhancedTestController {
           console.warn('Failed to parse AI options:', error);
         }
       }
-      
+
       const testFile = req.file;
 
       if (!url) {
@@ -78,11 +78,11 @@ export class EnhancedTestController {
       const testRunner = new TestRunner();
       await testRunner.initialize();
       console.log('✅ TestRunner initialized');
-      
+
       // Initialize AI services with error tracking
       console.log('🧠 Initializing AI services...');
       let nlpGenerator, visualAI, selfHealingAI, predictiveAI, securityAI, realtimeAI, testDataAI, enhancedA11yAI;
-      
+
       try {
         console.log('  - NLPTestGenerator...');
         nlpGenerator = new NLPTestGenerator();
@@ -165,7 +165,7 @@ export class EnhancedTestController {
       // Initialize DevTools analyzer
       const devToolsAnalyzer = new DevToolsAnalyzer(testRunner.getPage());
       await devToolsAnalyzer.startMonitoring();
-      
+
       await testRunner.navigateToPage(url);
 
       // Handle authentication
@@ -182,7 +182,7 @@ export class EnhancedTestController {
       if (nlpDescription && aiOptions?.useNLP) {
         console.log('🗣️  Generating tests from natural language description...');
         const nlpResult = await nlpGenerator.generateFromDescription(
-          nlpDescription, 
+          nlpDescription,
           url,
           await EnhancedTestController.capturePageContext(testRunner.getPage())
         );
@@ -193,7 +193,7 @@ export class EnhancedTestController {
         console.log('📂 Loading custom test cases...');
         const parser = new TestFileParser();
         const parsed = await parser.parseTestFile(testFile.buffer, testFile.originalname);
-        
+
         // Validate tests
         const validation = parser.validateTests(parsed.tests);
         if (!validation.valid) {
@@ -202,17 +202,17 @@ export class EnhancedTestController {
             details: validation.errors,
           });
         }
-        
+
         testCases = parsed.tests;
         testSource = `uploaded-${parsed.format}`;
-        
+
         // 🚀 Auto-generate UI tests if file only contains API tests
         const hasUiTests = testCases.some((tc: TestCase) => tc.type !== 'api');
         if (!hasUiTests && url) {
           console.log('🤖 Auto-generating UI tests (API-only file detected)...');
           const testGenerator = new TestGenerator(testRunner.getPage());
           const generatedTests = await testGenerator.generateTests();
-          
+
           // Add UI tests first, then API tests
           testCases = [...generatedTests, ...testCases];
           testSource = 'hybrid-auto+uploaded';
@@ -222,7 +222,7 @@ export class EnhancedTestController {
         console.log('🤖 Auto-generating intelligent test cases...');
         const testGenerator = new TestGenerator(testRunner.getPage());
         testCases = await testGenerator.generateTests();
-        
+
         // Enhance with AI-generated edge cases
         if (aiOptions?.generateEdgeCases) {
           const edgeCases = await nlpGenerator.generateEdgeCases(testCases);
@@ -242,10 +242,10 @@ export class EnhancedTestController {
       const apiTests = testCases.filter((tc: TestCase) => tc.type === 'api');
 
       console.log(`🧪 Executing ${testCases.length} AI-enhanced test cases...`);
-      
+
       // Execute UI tests with self-healing
       let results: TestResult[] = await EnhancedTestController.executeTestsWithHealing(testRunner, uiTests, selfHealingAI);
-      
+
       // Execute API tests
       if (apiTests.length > 0) {
         console.log('🌐 Executing API tests...');
@@ -260,9 +260,9 @@ export class EnhancedTestController {
           expectedResponse: tc.apiTest?.expectedResponse,
           timeout: tc.timeout,
         }));
-        
+
         const apiResults = await apiTester.executeTests(apiTestCases);
-        
+
         // Convert API results and merge
         const convertedApiResults: TestResult[] = apiResults.map((ar) => ({
           name: ar.name,
@@ -275,7 +275,7 @@ export class EnhancedTestController {
             validations: ar.validations,
           },
         } as TestResult));
-        
+
         results = [...results, ...convertedApiResults];
       }
 
@@ -283,7 +283,7 @@ export class EnhancedTestController {
       console.log('🤖 Analyzing test failures with AI...');
       const failureAnalyzer = new AIFailureAnalyzer();
       const failedTestsData: Array<{ testCase: TestCase; testResult: TestResult }> = [];
-      
+
       results.forEach((result, index) => {
         if (result.status === 'failed' && result.message && testCases[index]) {
           failedTestsData.push({
@@ -306,7 +306,7 @@ export class EnhancedTestController {
           }
           return result;
         });
-        
+
         console.log(`✅ Generated AI explanations for ${failedTestsData.length} failed test(s)`);
       }
 
@@ -332,13 +332,74 @@ export class EnhancedTestController {
         console.log('👁️ Performing visual AI analysis...');
         const screenshot = await testRunner.getPage().screenshot({ fullPage: true });
         const uiAnalysis = await visualAI.analyzeUIComponents(screenshot);
-        visualAnalysis = uiAnalysis;
+
+        // Transform to frontend-expected format
+        const issues = uiAnalysis.accessibility.issues.map(issue => ({
+          type: issue.type,
+          severity: issue.severity,
+          description: issue.description,
+          location: issue.element,
+          suggestion: issue.recommendation,
+        }));
+
+        // Add layout and design system issues
+        if (uiAnalysis.layoutAnalysis.spacing !== 'consistent') {
+          issues.push({
+            type: 'layout-inconsistency',
+            severity: 'moderate' as const,
+            description: 'Inconsistent spacing detected across the layout',
+            location: 'Multiple elements',
+            suggestion: 'Review spacing values and apply consistent design tokens',
+          });
+        }
+
+        if (uiAnalysis.designSystemAnalysis.consistency < 70) {
+          issues.push({
+            type: 'design-system-violation',
+            severity: 'moderate' as const,
+            description: `Low design system consistency: ${uiAnalysis.designSystemAnalysis.consistency}%`,
+            location: 'Various components',
+            suggestion: 'Align components with design system guidelines',
+          });
+        }
+
+        // Calculate scores
+        const layoutScore = uiAnalysis.layoutAnalysis.spacing === 'consistent' ? 100 : 75;
+        const performanceScore = Math.max(0, 100 - (uiAnalysis.performance.imageSize / 50000));
+        const componentConfidence = uiAnalysis.components.length > 0
+          ? uiAnalysis.components.reduce((sum, c) => sum + c.confidence, 0) / uiAnalysis.components.length
+          : 0.75;
+
+        visualAnalysis = {
+          overallStatus: issues.filter(i => i.severity === 'critical' || i.severity === 'serious').length === 0 ? 'passed' : 'failed',
+          issuesDetected: issues.length,
+          confidenceScore: componentConfidence,
+          issues: issues,
+          metrics: {
+            layoutScore: layoutScore,
+            consistencyScore: uiAnalysis.designSystemAnalysis.consistency,
+            accessibilityScore: uiAnalysis.accessibility.score,
+            performanceScore: Math.round(performanceScore),
+            responsiveScore: 85,
+            visualQualityScore: Math.round((layoutScore + uiAnalysis.designSystemAnalysis.consistency + uiAnalysis.accessibility.score + performanceScore) / 4),
+          },
+          recommendations: [
+            ...uiAnalysis.accessibility.recommendations,
+            ...uiAnalysis.performance.optimizationSuggestions,
+          ],
+          // Keep original data for reference
+          components: uiAnalysis.components,
+          layoutAnalysis: uiAnalysis.layoutAnalysis,
+          designSystemAnalysis: uiAnalysis.designSystemAnalysis,
+        };
+
         aiInsights.visual = visualAnalysis;
+        console.log(`✅ Visual analysis complete: ${issues.length} issues detected, overall status: ${visualAnalysis.overallStatus}`);
       }
 
       // Collect performance metrics
       const performance = await testRunner.getPerformanceMetrics();
-      
+
       // Get DevTools analysis
       const devToolsReport = await devToolsAnalyzer.getReport();
 
@@ -347,8 +408,8 @@ export class EnhancedTestController {
       if (aiOptions?.predictiveAnalytics) {
         console.log('🔮 Generating predictive insights...');
         predictions = await predictiveAI.generateInsights(
-          results, 
-          [performance], 
+          results,
+          [performance],
           { loadTime: performance.loadTime }
         );
         aiInsights.predictions = predictions;
@@ -387,7 +448,7 @@ export class EnhancedTestController {
         details: results,
         performance,
         devTools: devToolsReport,
-        
+
         // AI-powered insights
         aiInsights: aiInsights,
         securityReport: securityReport,
@@ -395,7 +456,7 @@ export class EnhancedTestController {
         visualAnalysis: visualAnalysis,
         predictions: predictions,
         healthStatus: healthStatus,
-        
+
         // AI metadata
         aiMetadata: {
           version: '2.0.0',
@@ -403,7 +464,7 @@ export class EnhancedTestController {
           confidenceScore: EnhancedTestController.calculateOverallConfidence(aiInsights),
           processingTime: Date.now(),
         },
-        
+
         errors: results
           .filter((r) => r.status === 'failed' && r.message)
           .map((r) => r.message!),
@@ -415,7 +476,7 @@ export class EnhancedTestController {
       console.error('❌ Error stack:', error instanceof Error ? error.stack : 'No stack trace');
       console.error('❌ Error name:', error instanceof Error ? error.name : 'Unknown');
       console.error('❌ Full error object:', JSON.stringify(error, Object.getOwnPropertyNames(error), 2));
-      
+
       res.status(500).json({
         error: 'Failed to run AI tests',
         message: error instanceof Error ? error.message : 'Unknown error',
@@ -475,7 +536,7 @@ export class EnhancedTestController {
       console.log('🧠 Generating AI insights for test results...');
 
       const predictiveAI = new PredictiveAI();
-      
+
       // Generate insights
       const insights = await predictiveAI.generateInsights(
         testResults,
@@ -515,7 +576,7 @@ export class EnhancedTestController {
     selfHealingAI: SelfHealingAI
   ): Promise<TestResult[]> {
     const results: TestResult[] = [];
-    
+
     for (const testCase of testCases) {
       let result;
       try {
@@ -523,13 +584,13 @@ export class EnhancedTestController {
         result = result[0]; // Get the single result
       } catch (error) {
         console.log(`🔧 Test failed, attempting self-healing: ${testCase.name}`);
-        
+
         // Try to heal the test
         const healingResult = await selfHealingAI.healBrokenTest(testCase, error as Error);
-        
+
         if (healingResult.success && healingResult.healedTest) {
           console.log(`✅ Test healed successfully: ${testCase.name}`);
-          
+
           // Retry with healed test
           try {
             result = await testRunner.executeTests([healingResult.healedTest]);
@@ -557,10 +618,10 @@ export class EnhancedTestController {
           } as TestResult;
         }
       }
-      
+
       results.push(result as TestResult);
     }
-    
+
     return results;
   }
 
@@ -587,14 +648,14 @@ export class EnhancedTestController {
    */
   private static calculateOverallConfidence(aiInsights: any): number {
     const confidenceScores = [];
-    
+
     if (aiInsights.nlp?.confidence) confidenceScores.push(aiInsights.nlp.confidence);
     if (aiInsights.predictions?.confidenceLevel) confidenceScores.push(aiInsights.predictions.confidenceLevel);
     if (aiInsights.security?.securityScore) confidenceScores.push(aiInsights.security.securityScore / 100);
     if (aiInsights.accessibility?.overallScore) confidenceScores.push(aiInsights.accessibility.overallScore / 100);
-    
+
     if (confidenceScores.length === 0) return 0.75; // Default confidence
-    
+
     return confidenceScores.reduce((sum, score) => sum + score, 0) / confidenceScores.length;
   }
 
@@ -603,18 +664,18 @@ export class EnhancedTestController {
    */
   private static generateAIRecommendations(insights: any, flakiness: any): string[] {
     const recommendations = [];
-    
+
     if (flakiness.flakyTests.length > 0) {
       recommendations.push('Consider stabilizing flaky tests with explicit waits and retries');
     }
-    
+
     if (insights.riskAssessment?.level === 'high') {
       recommendations.push('High risk detected - prioritize fixing critical issues');
     }
-    
+
     recommendations.push('Use AI-generated test data for better edge case coverage');
     recommendations.push('Enable real-time monitoring for production environments');
-    
+
     return recommendations;
   }
 
@@ -628,7 +689,7 @@ export class EnhancedTestController {
         timestamp: new Date(),
         services: {
           nlpGenerator: 'online',
-          visualAI: 'online',  
+          visualAI: 'online',
           selfHealing: 'online',
           predictiveAI: 'online',
           securityAI: 'online',

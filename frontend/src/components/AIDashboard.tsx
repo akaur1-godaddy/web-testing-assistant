@@ -1227,33 +1227,6 @@ const AIDashboard: React.FC<AIDashboardProps> = ({
                       </div>
                     )}
 
-                    {/* Screenshots */}
-                    {testResults.details && testResults.details.some((d: any) => d.screenshot) && (
-                      <div className="screenshots-section">
-                        <h4>📸 Test Screenshots</h4>
-                        <div className="screenshots-grid">
-                          {testResults.details
-                            .filter((d: any) => d.screenshot)
-                            .map((test: any, index: number) => (
-                              <div key={index} className="screenshot-card">
-                                <div className="screenshot-title">
-                                  {test.status === 'passed' ? '✅' : '❌'} {test.name}
-                                </div>
-                                <img
-                                  src={test.screenshot}
-                                  alt={test.name}
-                                  style={{
-                                    width: '100%',
-                                    borderRadius: '8px',
-                                    border: `2px solid ${test.status === 'passed' ? '#28a745' : '#dc3545'}`
-                                  }}
-                                />
-                              </div>
-                            ))}
-                        </div>
-                      </div>
-                    )}
-
                     {/* Recommendations */}
                     {testResults.visualAnalysis.recommendations && testResults.visualAnalysis.recommendations.length > 0 && (
                       <div className="visual-recommendations">
