@@ -432,8 +432,8 @@ function App() {
 
       <Footer aiMetadata={results?.aiMetadata} />
 
-      {/* Voice Interface */}
-      {voiceEnabled && (
+      {/* Voice Interface - Hidden during testing */}
+      {voiceEnabled && !loading && (
         <VoiceInterface
           onCommand={handleVoiceCommand}
           isEnabled={voiceEnabled}
