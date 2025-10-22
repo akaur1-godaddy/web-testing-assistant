@@ -113,7 +113,7 @@ function App() {
   const [voiceEnabled, setVoiceEnabled] = useState(true)
   const [nlpDescription, setNlpDescription] = useState('')
   const [aiOptions, setAiOptions] = useState({
-    useNLP: false,
+    useNLP: true,
     generateEdgeCases: true,
     generateTestData: true,
     securityScan: true,
