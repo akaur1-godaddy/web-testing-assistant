@@ -53,3 +53,8 @@ Thumbs.db
 # TypeScript
 *.tsbuildinfo
 
+
+# Test scripts
+check-status.js
+test-live.js
+test-live.py
