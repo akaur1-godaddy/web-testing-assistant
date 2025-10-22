@@ -28,6 +28,19 @@ export interface TestResult {
   message?: string;
   duration?: number;
   screenshot?: string;
+  // Self-healing information
+  healed?: boolean;
+  healingInfo?: {
+    strategy: string;
+    confidence: number;
+    explanation: string;
+  };
+  // AI failure explanation
+  aiFailureExplanation?: {
+    reason: string;
+    suggestion: string;
+    confidence: 'high' | 'medium' | 'low';
+  };
   // Element context information
   elementContext?: {
     selector?: string;

@@ -25,6 +25,11 @@ export interface TestResult {
       confidence: number
       explanation: string
     }
+    aiFailureExplanation?: {
+      reason: string
+      suggestion: string
+      confidence: 'high' | 'medium' | 'low'
+    }
     elementContext?: {
       selector?: string
       elementText?: string

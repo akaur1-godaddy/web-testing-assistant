@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { TestRunner, TestCase } from '../services/testRunner.js';
+import { TestRunner, TestCase, TestResult } from '../services/testRunner.js';
 import { TestGenerator } from '../services/testGenerator.js';
 import { TestFileParser } from '../services/testFileParser.js';
 import { DevToolsAnalyzer } from '../services/devToolsAnalyzer.js';
@@ -14,6 +14,7 @@ import { SecurityAI } from '../services/securityAI.js';
 import { RealtimeAI } from '../services/realtimeAI.js';
 import { TestDataAI } from '../services/testDataAI.js';
 import { EnhancedAccessibilityAI } from '../services/enhancedAccessibilityAI.js';
+import { AIFailureAnalyzer } from '../services/aiFailureAnalyzer.js';
 
 /**
  * Enhanced Test Controller with AI Integration
@@ -236,7 +237,7 @@ export class EnhancedTestController {
       console.log(`🧪 Executing ${testCases.length} AI-enhanced test cases...`);
       
       // Execute UI tests with self-healing
-      let results = await EnhancedTestController.executeTestsWithHealing(testRunner, uiTests, selfHealingAI);
+      let results: TestResult[] = await EnhancedTestController.executeTestsWithHealing(testRunner, uiTests, selfHealingAI);
       
       // Execute API tests
       if (apiTests.length > 0) {
@@ -256,9 +257,9 @@ export class EnhancedTestController {
         const apiResults = await apiTester.executeTests(apiTestCases);
         
         // Convert API results and merge
-        const convertedApiResults = apiResults.map((ar) => ({
+        const convertedApiResults: TestResult[] = apiResults.map((ar) => ({
           name: ar.name,
-          status: ar.status,
+          status: ar.status as 'passed' | 'failed',
           message: ar.message,
           duration: ar.duration,
           apiResponse: {
@@ -266,9 +267,40 @@ export class EnhancedTestController {
             response: ar.response,
             validations: ar.validations,
           },
-        }));
+        } as TestResult));
         
         results = [...results, ...convertedApiResults];
+      }
+
+      // 🤖 AI Failure Analysis - Analyze why tests failed
+      console.log('🤖 Analyzing test failures with AI...');
+      const failureAnalyzer = new AIFailureAnalyzer();
+      const failedTestsData: Array<{ testCase: TestCase; testResult: TestResult }> = [];
+      
+      results.forEach((result, index) => {
+        if (result.status === 'failed' && result.message && testCases[index]) {
+          failedTestsData.push({
+            testCase: testCases[index],
+            testResult: result as TestResult
+          });
+        }
+      });
+
+      if (failedTestsData.length > 0) {
+        const failureExplanations = await failureAnalyzer.analyzeMultipleFailures(failedTestsData);
+
+        // Add AI explanations to failed test results
+        results = results.map((result: TestResult) => {
+          if (result.status === 'failed' && failureExplanations.has(result.name)) {
+            return {
+              ...result,
+              aiFailureExplanation: failureExplanations.get(result.name)
+            } as TestResult;
+          }
+          return result;
+        });
+        
+        console.log(`✅ Generated AI explanations for ${failedTestsData.length} failed test(s)`);
       }
 
       // AI Security Scan
@@ -474,8 +506,8 @@ export class EnhancedTestController {
     testRunner: TestRunner,
     testCases: TestCase[],
     selfHealingAI: SelfHealingAI
-  ) {
-    const results = [];
+  ): Promise<TestResult[]> {
+    const results: TestResult[] = [];
     
     for (const testCase of testCases) {
       let result;
@@ -504,22 +536,22 @@ export class EnhancedTestController {
           } catch (healError) {
             result = {
               name: testCase.name,
-              status: 'failed',
+              status: 'failed' as const,
               message: `Healing failed: ${healError}`,
               duration: 0,
-            };
+            } as TestResult;
           }
         } else {
           result = {
             name: testCase.name,
-            status: 'failed',
+            status: 'failed' as const,
             message: error instanceof Error ? error.message : 'Unknown error',
             duration: 0,
-          };
+          } as TestResult;
         }
       }
       
-      results.push(result);
+      results.push(result as TestResult);
     }
     
     return results;

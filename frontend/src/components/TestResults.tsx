@@ -9,6 +9,7 @@ interface TestResultsProps {
 function TestResults({ results }: TestResultsProps) {
   const [expandedScreenshot, setExpandedScreenshot] = useState<number | null>(null)
   const [expandedElementScreenshot, setExpandedElementScreenshot] = useState<number | null>(null)
+  const [isAISummaryExpanded, setIsAISummaryExpanded] = useState(false)
   const successRate = results.totalTests > 0 
     ? Math.round((results.testsPassed / results.totalTests) * 100) 
     : 0
@@ -20,8 +21,9 @@ function TestResults({ results }: TestResultsProps) {
     return 0
   })
 
-  // Generate comprehensive AI Summary
-  const generateAISummary = () => {
+  // Generate comprehensive AI Summary (memoized)
+  const aiSummarySections = useMemo(() => {
+    const generateAISummary = () => {
     const sections = []
     
     try {
@@ -198,7 +200,18 @@ function TestResults({ results }: TestResultsProps) {
       title: '🤖 AI Analysis',
       content: `Test execution completed with ${successRate}% success rate. ${results.totalTests} total tests run.`
     }]
-  }
+    }
+    
+    try {
+      return generateAISummary()
+    } catch (error) {
+      console.error('Error generating AI summary:', error)
+      return [{
+        title: '🤖 AI Analysis',
+        content: `Test execution completed with ${successRate}% success rate. ${results.totalTests} total tests run.`
+      }]
+    }
+  }, [results, successRate])
 
   return (
     <div className="test-results-container">
@@ -228,58 +241,65 @@ function TestResults({ results }: TestResultsProps) {
         </div>
       </div>
 
-      {/* AI-Generated Summary */}
+      {/* AI-Generated Summary - Collapsible */}
       <div className="ai-summary-section">
-        <div className="ai-summary-header">
-          <h3 style={{ margin: 0, fontSize: '18px', fontWeight: 700, color: '#1a1a1a' }}>
-            🤖 AI-Powered Analysis
-          </h3>
+        <div 
+          className="ai-summary-header"
+          onClick={() => setIsAISummaryExpanded(!isAISummaryExpanded)}
+          style={{ cursor: 'pointer', userSelect: 'none' }}
+        >
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <span style={{ 
+              fontSize: '20px', 
+              transition: 'transform 0.3s ease',
+              transform: isAISummaryExpanded ? 'rotate(90deg)' : 'rotate(0deg)',
+              display: 'inline-block'
+            }}>
+              ▶
+            </span>
+            <h3 style={{ margin: 0, fontSize: '18px', fontWeight: 700, color: '#1a1a1a' }}>
+              🤖 AI-Powered Analysis
+            </h3>
+          </div>
           <span className="ai-badge">
             ✨ AI Generated
           </span>
         </div>
-        <div className="ai-summary-content">
-          {useMemo(() => {
-            try {
-              const sections = generateAISummary()
-              return sections.map((section: any, index: number) => (
-                <div key={index} className="ai-summary-section-item" style={{
-                  marginBottom: index < sections.length - 1 ? '1.25rem' : '0',
-                  paddingBottom: index < sections.length - 1 ? '1.25rem' : '0',
-                  borderBottom: index < sections.length - 1 ? '1px solid #e2e8f0' : 'none'
+        
+        {isAISummaryExpanded && (
+          <div className="ai-summary-content" style={{
+            animation: 'slideDown 0.3s ease-out'
+          }}>
+            {aiSummarySections.map((section: any, index: number) => (
+              <div key={index} className="ai-summary-section-item" style={{
+                marginBottom: index < aiSummarySections.length - 1 ? '1.25rem' : '0',
+                paddingBottom: index < aiSummarySections.length - 1 ? '1.25rem' : '0',
+                borderBottom: index < aiSummarySections.length - 1 ? '1px solid #e2e8f0' : 'none'
+              }}>
+                <h4 style={{ 
+                  margin: '0 0 0.5rem 0', 
+                  fontSize: '14px', 
+                  fontWeight: 700,
+                  color: '#1a202c',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.5rem'
                 }}>
-                  <h4 style={{ 
-                    margin: '0 0 0.5rem 0', 
-                    fontSize: '14px', 
-                    fontWeight: 700,
-                    color: '#1a202c',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '0.5rem'
-                  }}>
-                    {section.title}
-                  </h4>
-                  <p style={{ 
-                    margin: 0, 
-                    lineHeight: '1.7', 
-                    fontSize: '14px',
-                    color: '#4a5568',
-                    whiteSpace: 'pre-line'
-                  }}>
-                    {section.content}
-                  </p>
-                </div>
-              ))
-            } catch (error) {
-              console.error('Error rendering AI summary:', error)
-              return (
-                <div style={{ padding: '1rem', color: '#666' }}>
-                  <p>Test execution completed successfully. Detailed AI analysis is loading...</p>
-                </div>
-              )
-            }
-          }, [results])}
-        </div>
+                  {section.title}
+                </h4>
+                <p style={{ 
+                  margin: 0, 
+                  lineHeight: '1.7', 
+                  fontSize: '14px',
+                  color: '#4a5568',
+                  whiteSpace: 'pre-line'
+                }}>
+                  {section.content}
+                </p>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
 
       {results.performance && (
@@ -403,6 +423,96 @@ function TestResults({ results }: TestResultsProps) {
                 </div>
                 {test.message && (
                   <div className="test-message">{test.message}</div>
+                )}
+                
+                {/* AI Failure Explanation */}
+                {test.status === 'failed' && test.aiFailureExplanation && (
+                  <div style={{
+                    marginTop: '12px',
+                    padding: '14px',
+                    background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                    borderRadius: '10px',
+                    border: '2px solid rgba(255, 255, 255, 0.2)',
+                    boxShadow: '0 4px 12px rgba(102, 126, 234, 0.3)'
+                  }}>
+                    <div style={{ 
+                      display: 'flex', 
+                      alignItems: 'center', 
+                      gap: '8px',
+                      marginBottom: '10px'
+                    }}>
+                      <span style={{ fontSize: '18px' }}>🤖</span>
+                      <h4 style={{ 
+                        margin: 0, 
+                        fontSize: '14px', 
+                        fontWeight: 700,
+                        color: 'white',
+                        textShadow: '0 2px 4px rgba(0,0,0,0.2)'
+                      }}>
+                        AI Analysis: Why This Failed?
+                      </h4>
+                      <span style={{
+                        marginLeft: 'auto',
+                        fontSize: '10px',
+                        padding: '3px 8px',
+                        borderRadius: '12px',
+                        backgroundColor: 'rgba(255, 255, 255, 0.25)',
+                        color: 'white',
+                        fontWeight: 600,
+                        textTransform: 'uppercase',
+                        letterSpacing: '0.5px'
+                      }}>
+                        {test.aiFailureExplanation.confidence} confidence
+                      </span>
+                    </div>
+                    <div style={{
+                      backgroundColor: 'rgba(255, 255, 255, 0.95)',
+                      padding: '12px',
+                      borderRadius: '8px',
+                      boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
+                    }}>
+                      <div style={{ marginBottom: '10px' }}>
+                        <div style={{ 
+                          display: 'flex', 
+                          alignItems: 'center', 
+                          gap: '6px',
+                          marginBottom: '5px'
+                        }}>
+                          <span style={{ fontSize: '16px' }}>🔍</span>
+                          <strong style={{ fontSize: '12px', color: '#dc3545' }}>Reason:</strong>
+                        </div>
+                        <p style={{ 
+                          margin: 0, 
+                          fontSize: '13px', 
+                          color: '#2d3748',
+                          lineHeight: '1.6',
+                          paddingLeft: '22px'
+                        }}>
+                          {test.aiFailureExplanation.reason}
+                        </p>
+                      </div>
+                      <div>
+                        <div style={{ 
+                          display: 'flex', 
+                          alignItems: 'center', 
+                          gap: '6px',
+                          marginBottom: '5px'
+                        }}>
+                          <span style={{ fontSize: '16px' }}>💡</span>
+                          <strong style={{ fontSize: '12px', color: '#28a745' }}>How to Fix:</strong>
+                        </div>
+                        <p style={{ 
+                          margin: 0, 
+                          fontSize: '13px', 
+                          color: '#2d3748',
+                          lineHeight: '1.6',
+                          paddingLeft: '22px'
+                        }}>
+                          {test.aiFailureExplanation.suggestion}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
                 )}
                 
                 {/* Element Context */}
