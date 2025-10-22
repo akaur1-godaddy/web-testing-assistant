@@ -28,6 +28,20 @@ export interface TestResult {
   message?: string;
   duration?: number;
   screenshot?: string;
+  // Element context information
+  elementContext?: {
+    selector?: string;
+    elementText?: string;
+    elementType?: string;
+    pageUrl?: string;
+    elementScreenshot?: string;
+    coordinates?: {
+      x: number;
+      y: number;
+      width: number;
+      height: number;
+    };
+  };
   apiResponse?: {
     request: {
       method: string;
@@ -161,12 +175,21 @@ export class TestRunner {
       };
 
       try {
+        // Capture element context BEFORE executing the test
+        if (testCase.selector && testCase.type !== 'api') {
+          try {
+            result.elementContext = await this.captureElementContext(testCase);
+          } catch (contextError) {
+            console.warn('Could not capture element context:', contextError);
+          }
+        }
+
         await this.executeTestCase(testCase);
       } catch (error) {
         result.status = 'failed';
         result.message = error instanceof Error ? error.message : 'Unknown error';
         
-        // Capture screenshot on failure
+        // Capture full page screenshot on failure
         try {
           const screenshot = await this.page.screenshot({ 
             encoding: 'base64',
@@ -183,6 +206,90 @@ export class TestRunner {
     }
 
     return results;
+  }
+
+  /**
+   * Capture element context information including screenshot
+   */
+  private async captureElementContext(testCase: TestCase): Promise<any> {
+    if (!this.page || !testCase.selector) return null;
+
+    try {
+      // Wait for element to be visible
+      await this.page.waitForSelector(testCase.selector, { timeout: 3000 });
+      const element = await this.page.$(testCase.selector);
+      
+      if (!element) return null;
+
+      // Get element information
+      const elementInfo = await element.evaluate((el) => {
+        const rect = el.getBoundingClientRect();
+        return {
+          text: el.textContent?.trim() || '',
+          tagName: el.tagName.toLowerCase(),
+          type: el.getAttribute('type') || '',
+          id: el.id || '',
+          className: el.className || '',
+          coordinates: {
+            x: rect.x,
+            y: rect.y,
+            width: rect.width,
+            height: rect.height,
+          },
+        };
+      });
+
+      // Highlight element with a red border
+      await element.evaluate((el) => {
+        (el as HTMLElement).style.outline = '3px solid #ff0000';
+        (el as HTMLElement).style.outlineOffset = '2px';
+      });
+
+      // Capture screenshot of the element area (with padding)
+      const boundingBox = await element.boundingBox();
+      if (boundingBox) {
+        const padding = 20;
+        const maxWidth = 800;  // Maximum screenshot width
+        const maxHeight = 600; // Maximum screenshot height
+        
+        // If element is too large, limit the screenshot size
+        let clipWidth = boundingBox.width + (padding * 2);
+        let clipHeight = boundingBox.height + (padding * 2);
+        
+        if (clipWidth > maxWidth) clipWidth = maxWidth;
+        if (clipHeight > maxHeight) clipHeight = maxHeight;
+        
+        const screenshot = await this.page.screenshot({
+          encoding: 'base64',
+          clip: {
+            x: Math.max(0, boundingBox.x - padding),
+            y: Math.max(0, boundingBox.y - padding),
+            width: clipWidth,
+            height: clipHeight,
+          },
+        });
+
+        // Remove highlight
+        await element.evaluate((el) => {
+          (el as HTMLElement).style.outline = '';
+          (el as HTMLElement).style.outlineOffset = '';
+        });
+
+        return {
+          selector: testCase.selector,
+          elementText: elementInfo.text,
+          elementType: `${elementInfo.tagName}${elementInfo.type ? `[type="${elementInfo.type}"]` : ''}`,
+          pageUrl: this.page.url(),
+          elementScreenshot: `data:image/png;base64,${screenshot}`,
+          coordinates: elementInfo.coordinates,
+        };
+      }
+
+      return null;
+    } catch (error) {
+      console.warn('Failed to capture element context:', error);
+      return null;
+    }
   }
 
   private async executeTestCase(testCase: TestCase) {

@@ -25,6 +25,19 @@ export interface TestResult {
       confidence: number
       explanation: string
     }
+    elementContext?: {
+      selector?: string
+      elementText?: string
+      elementType?: string
+      pageUrl?: string
+      elementScreenshot?: string
+      coordinates?: {
+        x: number
+        y: number
+        width: number
+        height: number
+      }
+    }
     apiResponse?: {
       request: {
         method: string

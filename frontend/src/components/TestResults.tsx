@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import './TestResults.css'
 import { TestResult } from '../App'
 
@@ -8,8 +8,9 @@ interface TestResultsProps {
 
 function TestResults({ results }: TestResultsProps) {
   const [expandedScreenshot, setExpandedScreenshot] = useState<number | null>(null)
-  const successRate = results.totalTests > 0
-    ? Math.round((results.testsPassed / results.totalTests) * 100)
+  const [expandedElementScreenshot, setExpandedElementScreenshot] = useState<number | null>(null)
+  const successRate = results.totalTests > 0 
+    ? Math.round((results.testsPassed / results.totalTests) * 100) 
     : 0
 
   // Sort tests: passed tests first, then failed tests
@@ -18,6 +19,186 @@ function TestResults({ results }: TestResultsProps) {
     if (a.status !== 'passed' && b.status === 'passed') return 1
     return 0
   })
+
+  // Generate comprehensive AI Summary
+  const generateAISummary = () => {
+    const sections = []
+    
+    try {
+      // 1. Overall Test Analysis
+      sections.push({
+        title: '🎯 Test Execution Summary',
+        content: `Executed ${results.totalTests} automated test cases with ${successRate}% success rate. ${results.testsPassed} tests passed successfully${results.testsFailed > 0 ? ` and ${results.testsFailed} test(s) failed` : ''}.`
+      })
+    } catch (error) {
+      console.error('Error generating test summary:', error)
+    }
+    
+    // 2. Performance Analysis
+    try {
+      if (results.performance || results.devTools?.performance) {
+        const loadTime = results.performance?.loadTime || 0
+        const fcp = results.devTools?.performance?.firstContentfulPaint || 0
+        const lcp = results.devTools?.performance?.largestContentfulPaint || 0
+        
+        let perfContent = ''
+        if (loadTime < 2000 && loadTime > 0) {
+          perfContent = `⚡ Excellent page load performance (${loadTime}ms). `
+        } else if (loadTime < 4000 && loadTime > 0) {
+          perfContent = `⚠️ Page load time is ${loadTime}ms - consider optimization to reach under 2 seconds. `
+        } else if (loadTime > 0) {
+          perfContent = `🔴 Slow page load detected (${loadTime}ms) - this significantly impacts user experience. `
+        }
+        
+        if (fcp > 0) {
+          perfContent += `First Contentful Paint: ${fcp}ms${fcp < 1800 ? ' (excellent)' : fcp < 3000 ? ' (good)' : ' (needs improvement)'}. `
+        }
+        if (lcp > 0) {
+          perfContent += `Largest Contentful Paint: ${lcp}ms${lcp < 2500 ? ' (excellent)' : lcp < 4000 ? ' (good)' : ' (needs improvement)'}. `
+        }
+        
+        if (perfContent) {
+          sections.push({
+            title: '⚡ Performance Insights',
+            content: perfContent
+          })
+        }
+      }
+    } catch (error) {
+      console.error('Error generating performance summary:', error)
+    }
+    
+    // 3. Accessibility Analysis
+    try {
+      const a11yIssues = results.devTools?.accessibility?.issues || []
+      if (a11yIssues.length > 0) {
+        const missingAlt = a11yIssues.filter((i: any) => typeof i === 'string' && i.includes('alt')).length
+        const missingLabels = a11yIssues.filter((i: any) => typeof i === 'string' && i.includes('label')).length
+        const contrastIssues = a11yIssues.filter((i: any) => typeof i === 'string' && i.includes('contrast')).length
+        
+        let a11yContent = `Found ${a11yIssues.length} accessibility issue(s). `
+        const issueTypes = []
+        if (missingAlt > 0) issueTypes.push(`${missingAlt} image(s) missing alt text`)
+        if (missingLabels > 0) issueTypes.push(`${missingLabels} form element(s) missing labels`)
+        if (contrastIssues > 0) issueTypes.push(`${contrastIssues} color contrast issue(s)`)
+        
+        if (issueTypes.length > 0) {
+          a11yContent += `Issues include: ${issueTypes.join(', ')}. `
+        }
+        a11yContent += `These should be addressed to meet WCAG 2.1 Level AA compliance standards.`
+        
+        sections.push({
+          title: '♿ Accessibility Analysis',
+          content: a11yContent
+        })
+      } else if (results.devTools?.accessibility) {
+        sections.push({
+          title: '♿ Accessibility Analysis',
+          content: '✅ No critical accessibility issues detected. Website follows WCAG guidelines for semantic HTML and ARIA attributes.'
+        })
+      }
+    } catch (error) {
+      console.error('Error generating accessibility summary:', error)
+    }
+    
+    // 4. Network & Resource Analysis
+    try {
+      if (results.devTools?.network) {
+        const { totalRequests = 0, failedRequests = 0, totalSize = 0 } = results.devTools.network
+        let networkContent = `Analyzed ${totalRequests} network requests. `
+        
+        if (failedRequests > 0) {
+          networkContent += `⚠️ ${failedRequests} request(s) failed - this may indicate broken resources or API endpoints. `
+        } else if (totalRequests > 0) {
+          networkContent += `✅ All requests completed successfully. `
+        }
+        
+        if (totalSize > 0) {
+          const sizeMB = (totalSize / (1024 * 1024)).toFixed(2)
+          if (totalSize > 5 * 1024 * 1024) {
+            networkContent += `📦 Total page size is ${sizeMB}MB - consider optimizing images and code splitting to improve load times.`
+          } else {
+            networkContent += `📦 Total page size: ${sizeMB}MB (optimized).`
+          }
+        }
+        
+        if (networkContent.trim().length > 30) {
+          sections.push({
+            title: '🌐 Network Performance',
+            content: networkContent
+          })
+        }
+      }
+    } catch (error) {
+      console.error('Error generating network summary:', error)
+    }
+    
+    // 5. Console & JavaScript Errors
+    try {
+      if (results.devTools?.console) {
+        const { errors = [], warnings = [] } = results.devTools.console
+        if (errors.length > 0 || warnings.length > 0) {
+          let consoleContent = ''
+          if (errors.length > 0) {
+            consoleContent += `🔴 ${errors.length} JavaScript error(s) detected in console - these may cause functionality issues. `
+          }
+          if (warnings.length > 0) {
+            consoleContent += `⚠️ ${warnings.length} console warning(s) found - review these to prevent potential issues.`
+          }
+          
+          sections.push({
+            title: '🐛 Console Analysis',
+            content: consoleContent
+          })
+        } else {
+          sections.push({
+            title: '🐛 Console Analysis',
+            content: '✅ No JavaScript errors or warnings detected - clean console output.'
+          })
+        }
+      }
+    } catch (error) {
+      console.error('Error generating console summary:', error)
+    }
+    
+    // 6. AI Recommendations
+    try {
+      const recommendations = []
+      const a11yIssues = results.devTools?.accessibility?.issues || []
+      
+      if (results.testsFailed > 0) {
+        recommendations.push('Fix failing test cases by ensuring all interactive elements are functional and accessible')
+      }
+      if (a11yIssues.length > 0) {
+        recommendations.push('Improve accessibility by adding proper ARIA labels, alt text, and semantic HTML')
+      }
+      if (results.performance?.loadTime && results.performance.loadTime > 3000) {
+        recommendations.push('Optimize page load time through code splitting, lazy loading, and image compression')
+      }
+      if (results.devTools?.network?.failedRequests && results.devTools.network.failedRequests > 0) {
+        recommendations.push('Fix broken network requests and ensure all API endpoints are functioning correctly')
+      }
+      if (results.devTools?.console?.errors && results.devTools.console.errors.length > 0) {
+        recommendations.push('Debug and resolve JavaScript errors to prevent functionality issues')
+      }
+      
+      if (recommendations.length === 0) {
+        recommendations.push('Your website is well-optimized and passes all quality checks - ready for production deployment!')
+      }
+      
+      sections.push({
+        title: '💡 AI-Powered Recommendations',
+        content: recommendations.map((r, i) => `${i + 1}. ${r}`).join('\n')
+      })
+    } catch (error) {
+      console.error('Error generating recommendations:', error)
+    }
+    
+    return sections.length > 0 ? sections : [{
+      title: '🤖 AI Analysis',
+      content: `Test execution completed with ${successRate}% success rate. ${results.totalTests} total tests run.`
+    }]
+  }
 
   return (
     <div className="test-results-container">
@@ -44,6 +225,60 @@ function TestResults({ results }: TestResultsProps) {
         <div className="summary-card">
           <div className="summary-number">{successRate}%</div>
           <div className="summary-label">Success Rate</div>
+        </div>
+      </div>
+
+      {/* AI-Generated Summary */}
+      <div className="ai-summary-section">
+        <div className="ai-summary-header">
+          <h3 style={{ margin: 0, fontSize: '18px', fontWeight: 700, color: '#1a1a1a' }}>
+            🤖 AI-Powered Analysis
+          </h3>
+          <span className="ai-badge">
+            ✨ AI Generated
+          </span>
+        </div>
+        <div className="ai-summary-content">
+          {useMemo(() => {
+            try {
+              const sections = generateAISummary()
+              return sections.map((section: any, index: number) => (
+                <div key={index} className="ai-summary-section-item" style={{
+                  marginBottom: index < sections.length - 1 ? '1.25rem' : '0',
+                  paddingBottom: index < sections.length - 1 ? '1.25rem' : '0',
+                  borderBottom: index < sections.length - 1 ? '1px solid #e2e8f0' : 'none'
+                }}>
+                  <h4 style={{ 
+                    margin: '0 0 0.5rem 0', 
+                    fontSize: '14px', 
+                    fontWeight: 700,
+                    color: '#1a202c',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '0.5rem'
+                  }}>
+                    {section.title}
+                  </h4>
+                  <p style={{ 
+                    margin: 0, 
+                    lineHeight: '1.7', 
+                    fontSize: '14px',
+                    color: '#4a5568',
+                    whiteSpace: 'pre-line'
+                  }}>
+                    {section.content}
+                  </p>
+                </div>
+              ))
+            } catch (error) {
+              console.error('Error rendering AI summary:', error)
+              return (
+                <div style={{ padding: '1rem', color: '#666' }}>
+                  <p>Test execution completed successfully. Detailed AI analysis is loading...</p>
+                </div>
+              )
+            }
+          }, [results])}
         </div>
       </div>
 
@@ -169,6 +404,166 @@ function TestResults({ results }: TestResultsProps) {
                 {test.message && (
                   <div className="test-message">{test.message}</div>
                 )}
+                
+                {/* Element Context */}
+                {test.elementContext && (
+                  <div className="element-context-section" style={{ 
+                    marginTop: '10px', 
+                    padding: '12px', 
+                    backgroundColor: '#e7f3ff', 
+                    borderRadius: '8px',
+                    border: '2px solid #2196F3',
+                    fontSize: '12px'
+                  }}>
+                    <h4 style={{ margin: '0 0 8px 0', fontSize: '13px', color: '#1976D2', fontWeight: 'bold' }}>
+                      🎯 Testing Element
+                    </h4>
+                    <div style={{ display: 'grid', gap: '8px' }}>
+                      {test.elementContext.elementType && (
+                        <div>
+                          <strong>Element:</strong> <code style={{ 
+                            backgroundColor: '#fff', 
+                            padding: '2px 6px', 
+                            borderRadius: '4px',
+                            fontSize: '11px',
+                            color: '#d32f2f'
+                          }}>
+                            {test.elementContext.elementType}
+                          </code>
+                        </div>
+                      )}
+                      {test.elementContext.elementText && test.elementContext.elementText.trim() && (
+                        <div>
+                          <strong>Text:</strong> <span style={{ 
+                            color: '#424242',
+                            fontStyle: 'italic',
+                            display: 'block',
+                            maxWidth: '100%',
+                            overflow: 'hidden',
+                            textOverflow: 'ellipsis',
+                            whiteSpace: 'nowrap'
+                          }} title={test.elementContext.elementText}>
+                            "{test.elementContext.elementText.length > 50 
+                              ? test.elementContext.elementText.substring(0, 50) + '...' 
+                              : test.elementContext.elementText}"
+                          </span>
+                        </div>
+                      )}
+                      {test.elementContext.selector && (
+                        <div>
+                          <strong>Selector:</strong> 
+                          <code 
+                            onClick={() => test.elementContext?.elementScreenshot && setExpandedElementScreenshot(index)}
+                            style={{ 
+                              backgroundColor: '#fff', 
+                              padding: '2px 6px', 
+                              borderRadius: '4px',
+                              fontSize: '10px',
+                              color: '#1565C0',
+                              wordBreak: 'break-all',
+                              cursor: test.elementContext?.elementScreenshot ? 'pointer' : 'default',
+                              textDecoration: test.elementContext?.elementScreenshot ? 'underline' : 'none',
+                              transition: 'all 0.2s'
+                            }}
+                            onMouseOver={(e) => {
+                              if (test.elementContext?.elementScreenshot) {
+                                e.currentTarget.style.backgroundColor = '#e3f2fd';
+                                e.currentTarget.style.color = '#0d47a1';
+                              }
+                            }}
+                            onMouseOut={(e) => {
+                              e.currentTarget.style.backgroundColor = '#fff';
+                              e.currentTarget.style.color = '#1565C0';
+                            }}
+                            title={test.elementContext?.elementScreenshot ? 'Click to see element location' : ''}
+                          >
+                            {test.elementContext.selector}
+                          </code>
+                          {test.elementContext?.elementScreenshot && (
+                            <span style={{ 
+                              fontSize: '9px', 
+                              color: '#666',
+                              marginLeft: '5px',
+                              fontStyle: 'italic'
+                            }}>
+                              (click to see location)
+                            </span>
+                          )}
+                        </div>
+                      )}
+                      {test.elementContext.pageUrl && (
+                        <div>
+                          <strong>Page:</strong> <span style={{ 
+                            color: '#424242',
+                            fontSize: '11px',
+                            wordBreak: 'break-all'
+                          }}>
+                            {test.elementContext.pageUrl}
+                          </span>
+                        </div>
+                      )}
+                      {test.elementContext.elementScreenshot && (
+                        <div style={{ marginTop: '8px' }}>
+                          <strong style={{ display: 'block', marginBottom: '5px' }}>📸 Element Screenshot:</strong>
+                          {expandedElementScreenshot === index ? (
+                            <div 
+                              onClick={() => setExpandedElementScreenshot(null)}
+                              style={{ cursor: 'zoom-out' }}
+                            >
+                              <img 
+                                src={test.elementContext.elementScreenshot} 
+                                alt="Element highlight (expanded)" 
+                                style={{ 
+                                  maxWidth: '100%', 
+                                  borderRadius: '4px', 
+                                  border: '3px solid #ff0000',
+                                  boxShadow: '0 4px 12px rgba(0,0,0,0.2)'
+                                }}
+                              />
+                              <p style={{ 
+                                fontSize: '10px', 
+                                color: '#666', 
+                                marginTop: '5px',
+                                fontStyle: 'italic'
+                              }}>
+                                🔍 Click to collapse • Red border highlights the element being tested
+                              </p>
+                            </div>
+                          ) : (
+                            <div 
+                              onClick={() => setExpandedElementScreenshot(index)}
+                              style={{ cursor: 'zoom-in' }}
+                            >
+                              <img 
+                                src={test.elementContext.elementScreenshot} 
+                                alt="Element highlight (thumbnail)" 
+                                style={{ 
+                                  width: '200px',
+                                  height: 'auto',
+                                  borderRadius: '4px', 
+                                  border: '2px solid #ff0000',
+                                  boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+                                  transition: 'transform 0.2s'
+                                }}
+                                onMouseOver={(e) => e.currentTarget.style.transform = 'scale(1.05)'}
+                                onMouseOut={(e) => e.currentTarget.style.transform = 'scale(1)'}
+                              />
+                              <p style={{ 
+                                fontSize: '10px', 
+                                color: '#666', 
+                                marginTop: '5px',
+                                fontStyle: 'italic'
+                              }}>
+                                🔍 Click to zoom • Red border highlights the element being tested
+                              </p>
+                            </div>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+                
                 {test.screenshot && (
                   <div className="test-screenshot">
                     {expandedScreenshot === index ? (

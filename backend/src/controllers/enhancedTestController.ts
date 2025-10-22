@@ -197,6 +197,19 @@ export class EnhancedTestController {
         
         testCases = parsed.tests;
         testSource = `uploaded-${parsed.format}`;
+        
+        // 🚀 Auto-generate UI tests if file only contains API tests
+        const hasUiTests = testCases.some((tc: TestCase) => tc.type !== 'api');
+        if (!hasUiTests && url) {
+          console.log('🤖 Auto-generating UI tests (API-only file detected)...');
+          const testGenerator = new TestGenerator(testRunner.getPage());
+          const generatedTests = await testGenerator.generateTests();
+          
+          // Add UI tests first, then API tests
+          testCases = [...generatedTests, ...testCases];
+          testSource = 'hybrid-auto+uploaded';
+          console.log(`✅ Added ${generatedTests.length} auto-generated UI tests`);
+        }
       } else {
         console.log('🤖 Auto-generating intelligent test cases...');
         const testGenerator = new TestGenerator(testRunner.getPage());
