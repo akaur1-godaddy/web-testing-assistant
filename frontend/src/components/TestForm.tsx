@@ -10,6 +10,7 @@ interface TestFormProps {
   onNlpChange?: (value: string) => void
   onAiOptionToggle?: (option: any) => void
   aiEnabled?: boolean
+  onUrlChange?: (url: string) => void
 }
 
 function TestForm({
@@ -19,7 +20,8 @@ function TestForm({
   nlpDescription,
   onNlpChange,
   onAiOptionToggle,
-  aiEnabled
+  aiEnabled,
+  onUrlChange
 }: TestFormProps) {
   const [url, setUrl] = useState('')
   const [username, setUsername] = useState('')
@@ -115,7 +117,29 @@ function TestForm({
       </div>
 
       <form onSubmit={handleSubmit} className="test-form">
-        {/* Main Test Configuration */}
+        {/* URL Field - Always Visible */}
+        <div className="form-section">
+          <div className="form-group">
+            <label htmlFor="url">
+              Website URL <span className="required">*</span>
+            </label>
+            <input
+              type="url"
+              id="url"
+              value={url}
+              onChange={(e) => {
+                console.log('🔧 TestForm URL input changed to:', e.target.value)
+                setUrl(e.target.value)
+                onUrlChange?.(e.target.value)
+                console.log('🔧 TestForm called onUrlChange with:', e.target.value)
+              }}
+              placeholder="https://example.com"
+              required
+            />
+          </div>
+        </div>
+
+        {/* Advanced Configuration */}
         <div className="form-section">
           {aiEnabled && (
             <div
@@ -131,8 +155,8 @@ function TestForm({
               }}
               aria-expanded={step1Expanded}
             >
-              <span className="step-badge">Step 1</span>
-              <h3>Add Target Configuration</h3>
+              <span className="step-badge">Optional</span>
+              <h3>Advanced Configuration</h3>
               <span className={`collapse-icon ${step1Expanded ? 'expanded' : ''}`}>
                 <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
                   <path d="M4 6L8 10L12 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
@@ -142,20 +166,6 @@ function TestForm({
           )}
           {(step1Expanded || !aiEnabled) && (
             <>
-              <div className="form-group">
-                <label htmlFor="url">
-                  Website URL <span className="required">*</span>
-                </label>
-                <input
-                  type="url"
-                  id="url"
-                  value={url}
-                  onChange={(e) => setUrl(e.target.value)}
-                  placeholder="https://example.com"
-                  required
-                />
-              </div>
-
               <div className="form-row">
                 <div className="form-group">
                   <label htmlFor="username">Username (optional)</label>

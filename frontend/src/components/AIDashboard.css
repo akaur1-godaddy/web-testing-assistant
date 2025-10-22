@@ -1220,3 +1220,45 @@
   left: 0;
   top: 0.75rem;
 }
+
+/* ============================================
+   Chart Descriptions & Explanations
+   ============================================ */
+
+.chart-description {
+  background: rgba(0, 0, 0, 0.3);
+  padding: 15px;
+  border-radius: 8px;
+  margin-bottom: 15px;
+  border-left: 3px solid #00ff88;
+  font-size: 0.9rem;
+  line-height: 1.4;
+  backdrop-filter: blur(10px);
+}
+
+.chart-description p {
+  margin: 5px 0;
+  color: #ffffff;
+}
+
+.chart-description strong {
+  color: #00ff88;
+}
+
+.metric-explanations {
+  margin: 10px 0;
+  padding-left: 20px;
+}
+
+.metric-explanations li {
+  margin: 5px 0;
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 0.85rem;
+}
+
+.metric-meaning {
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.7);
+  margin-top: 5px;
+  font-style: italic;
+}

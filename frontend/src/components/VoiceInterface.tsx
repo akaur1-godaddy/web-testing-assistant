@@ -243,18 +243,23 @@ const VoiceInterface: React.FC<VoiceInterfaceProps> = ({
       if (command) {
         setCommandHistory(prev => [command, ...prev.slice(0, 9)]);
         
-        // Execute command
-        await executeCommand(command);
-        onCommand(command);
+        // Provide immediate voice feedback
+        const response = getQuickResponse(command);
+        speakResponse(response); // Don't await - let it speak while processing
         
-        // Provide voice feedback
-        await speakResponse(generateResponse(command));
-      } else {
-        await speakResponse("Sorry, I didn't understand that command. Try saying 'help' to see available commands.");
+        // Execute command through parent component
+        onCommand(command);
       }
     } catch (error) {
       console.error('Command processing error:', error);
-      await speakResponse("Sorry, there was an error processing your command.");
+      speakResponse("Processing your request");
+      // Still try to execute something
+      onCommand({
+        text,
+        intent: 'nlp_test',
+        entities: { description: text, nlpDescription: text },
+        confidence: 0.7,
+      });
     } finally {
       setVoiceState(prev => ({ ...prev, isProcessing: false }));
       setTranscript('');
@@ -264,6 +269,7 @@ const VoiceInterface: React.FC<VoiceInterfaceProps> = ({
   const parseCommand = (text: string): VoiceCommand | null => {
     const normalizedText = text.toLowerCase().trim();
     
+    // First check for specific command patterns
     for (const [commandName, config] of Object.entries(commandPatterns)) {
       const match = normalizedText.match(config.pattern);
       
@@ -277,7 +283,22 @@ const VoiceInterface: React.FC<VoiceInterfaceProps> = ({
       }
     }
 
-    return null;
+    // If no specific pattern matches, treat as NLP test description
+    // This enables production-like behavior where any text becomes a test instruction
+    const extractedUrl = extractUrl(text);
+    console.log('🎤 Voice parseCommand - extracted URL from text:', extractedUrl);
+    console.log('🎤 Voice parseCommand - final entities.target will be:', extractedUrl || undefined);
+    
+    return {
+      text,
+      intent: 'nlp_test',
+      entities: {
+        description: text,
+        nlpDescription: text,
+        target: extractedUrl || undefined
+      },
+      confidence: Math.min(0.95, Math.max(0.7, text.length / 100 + 0.5)),
+    };
   };
 
   const extractEntities = (match: RegExpMatchArray, intent: string): { [key: string]: string } => {
@@ -298,6 +319,13 @@ const VoiceInterface: React.FC<VoiceInterfaceProps> = ({
     return entities;
   };
 
+  const extractUrl = (text: string): string | null => {
+    // Simple URL extraction from text
+    const urlRegex = /(https?:\/\/[^\s]+)/gi;
+    const match = text.match(urlRegex);
+    return match ? match[0] : null;
+  };
+
   const calculateConfidence = (text: string, commandName: string): number => {
     // Simple confidence scoring based on command clarity
     const baseConfidence = 0.8;
@@ -310,31 +338,28 @@ const VoiceInterface: React.FC<VoiceInterfaceProps> = ({
     return Math.max(baseConfidence - 0.1, 0.6);
   };
 
-  const executeCommand = async (command: VoiceCommand) => {
-    console.log('⚡ Executing command:', command);
+  const getQuickResponse = (command: VoiceCommand): string => {
+    const quickResponses = {
+      'run_test': 'Starting test',
+      'accessibility_test': 'Running accessibility test',
+      'performance_test': 'Checking performance', 
+      'security_test': 'Security scan starting',
+      'visual_test': 'Visual test starting',
+      'show_results': 'Opening results',
+      'generate_test': 'Generating tests',
+      'nlp_test': 'Creating tests from your description',
+      'help': 'Here to help',
+      'stop': 'Stopping',
+    };
 
-    switch (command.intent) {
-      case 'run_test':
-        // Simulate test execution
-        await new Promise(resolve => setTimeout(resolve, 1000));
-        break;
-      
-      case 'show_results':
-        // Show results dashboard
-        break;
-        
-      case 'generate_test':
-        // Generate tests using AI
-        break;
-        
-      case 'help':
-        // Show help information
-        break;
-        
-      case 'stop':
-        stopListening();
-        break;
+    let response = quickResponses[command.intent as keyof typeof quickResponses] || 'Processing your request';
+
+    // Add URL context if available
+    if (command.entities.target) {
+      response += ` on ${command.entities.target}`;
     }
+
+    return response;
   };
 
   const generateResponse = (command: VoiceCommand): string => {
@@ -459,7 +484,7 @@ const VoiceInterface: React.FC<VoiceInterfaceProps> = ({
 
   return (
     <div className="voice-interface">
-      <style jsx>{`
+      <style>{`
         .voice-interface {
           position: fixed;
           bottom: 20px;
@@ -714,12 +739,12 @@ const VoiceInterface: React.FC<VoiceInterfaceProps> = ({
             <div className="voice-commands">
               <strong>💡 Try saying:</strong>
               <ul className="command-examples">
-                <li>"Test this website"</li>
-                <li>"Run accessibility test"</li>
-                <li>"Show me the results"</li>
-                <li>"Generate test cases"</li>
+                <li>"Test the login form with invalid credentials"</li>
+                <li>"Check if buttons are accessible with keyboard navigation"</li>
+                <li>"Verify the contact form validates email addresses"</li>
+                <li>"Test the shopping cart checkout process"</li>
                 <li>"Run security scan"</li>
-                <li>"Explain performance metrics"</li>
+                <li>"Show me the results"</li>
               </ul>
             </div>
           </motion.div>

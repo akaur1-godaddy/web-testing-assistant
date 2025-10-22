@@ -28,11 +28,18 @@ export class EnhancedTestController {
   static async runAITests(req: Request, res: Response) {
     try {
       console.log('=== AI TEST START ===');
+      console.log('📥 Backend received request body:', {
+        url: req.body.url,
+        username: req.body.username,
+        nlpDescription: req.body.nlpDescription,
+        aiOptions: req.body.aiOptions ? 'present' : 'missing'
+      });
       const url = req.body.url;
       const username = req.body.username || '';
       const password = req.body.password || '';
       const testType = req.body.testType || 'comprehensive';
       const nlpDescription = req.body.nlpDescription || '';
+      console.log('🎯 Final URL being used for testing:', url);
       
       // Parse AI options from FormData string
       let aiOptions: any = {

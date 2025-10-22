@@ -601,6 +601,11 @@ const AIDashboard: React.FC<AIDashboardProps> = ({
               {/* Performance Chart */}
               <div className="dashboard-card">
                 <h3 className="card-title">📈 Performance Trends</h3>
+                <div className="chart-description">
+                  <p><strong>Bottom (X-axis) = Days ago:</strong> 0 = Today • 1.0 = Yesterday • 2.0 = 2 days ago • 4.0 = 4 days ago</p>
+                  <p><strong>Left side (Y-axis) = Load time:</strong> 400 = 0.4sec • 1000 = 1sec • 1400 = 1.4sec</p>
+                  <p><strong>Goals:</strong> Under 1000ms = Great • Under 3000ms = Acceptable • Over 3000ms = Users leave</p>
+                </div>
                 <div className="chart-container">
                   <svg ref={performanceChartRef}></svg>
                 </div>
@@ -609,6 +614,11 @@ const AIDashboard: React.FC<AIDashboardProps> = ({
               {/* Predictions */}
               <div className="dashboard-card">
                 <h3 className="card-title">🔮 AI Predictions</h3>
+                <div className="chart-description">
+                  <p><strong>Risk of issues in next 30 days:</strong> Performance (85%) • UX (90%) • Security (30%)</p>
+                  <p><strong>High bars (70%+):</strong> Likely to break • <strong>Low bars (30%-):</strong> Probably fine</p>
+                  <p><strong>Action needed:</strong> Focus testing on high-risk areas first</p>
+                </div>
                 <div className="chart-container">
                   <svg ref={predictionChartRef}></svg>
                 </div>
@@ -758,14 +768,29 @@ const AIDashboard: React.FC<AIDashboardProps> = ({
               {/* Performance Trends */}
               <div className="dashboard-card">
                 <h3 className="card-title">📈 Performance Predictions</h3>
+                <div className="chart-description">
+                  <p><strong>What these numbers mean for your business:</strong></p>
+                  <ul className="metric-explanations">
+                    <li><strong>Load Time:</strong> Slow = users leave before page loads (keep under 3s)</li>
+                    <li><strong>First Paint:</strong> How fast users see something (under 1.5s = good)</li>
+                    <li><strong>Largest Paint:</strong> Main content appears (under 2.5s = acceptable)</li>
+                    <li><strong>Layout Shift:</strong> Page jumps around (under 0.1 = won't annoy users)</li>
+                  </ul>
+                  <p><strong>↗️ Getting better</strong> • <strong>➡️ Same performance</strong> • <strong>↘️ Getting worse (fix needed)</strong></p>
+                </div>
                 {testResults?.predictions?.performanceTrends ? (
                   <div className="performance-trends">
                     {Object.entries(testResults.predictions.performanceTrends.trends || {}).map(([metric, data]: [string, any]) => (
                       <div key={metric} className="trend-item">
                         <div className="metric-name">{metric.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase())}</div>
-                        <div className="metric-value">{data.current}</div>
+                        <div className="metric-value">{data.current}{metric.includes('Time') ? 's' : metric.includes('Shift') ? '' : 'ms'}</div>
                         <div className={`trend-indicator trend-${data.trend}`}>
-                          {data.trend === 'improving' ? '↗️' : data.trend === 'decreasing' ? '↘️' : '➡️'} {data.changePercent}%
+                          {data.trend === 'improving' ? '↗️' : data.trend === 'decreasing' ? '↘️' : '➡️'} {data.changePercent > 0 ? '+' : ''}{data.changePercent}%
+                        </div>
+                        <div className="metric-meaning">
+                          {data.trend === 'improving' ? 'Getting faster ✅' : 
+                           data.trend === 'decreasing' ? 'Getting slower ⚠️' : 
+                           'Stable performance ℹ️'}
                         </div>
                       </div>
                     ))}

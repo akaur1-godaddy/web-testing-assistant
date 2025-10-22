@@ -130,6 +130,14 @@ function App() {
   const [aiEnabled, setAiEnabled] = useState(true)
   const [voiceEnabled, setVoiceEnabled] = useState(true)
   const [nlpDescription, setNlpDescription] = useState('')
+  const [currentUrl, setCurrentUrl] = useState('')
+  
+  const handleUrlChange = (newUrl: string) => {
+    console.log('🔄 App.handleUrlChange received:', newUrl)
+    setCurrentUrl(newUrl)
+    console.log('🔄 App.currentUrl updated to:', newUrl)
+    console.log('🔄 App.currentUrl state after update:', newUrl)
+  }
   const [aiOptions, setAiOptions] = useState({
     useNLP: true,
     generateEdgeCases: true,
@@ -191,6 +199,38 @@ function App() {
         }
         break
 
+      case 'nlp_test':
+        // Handle NLP test generation with custom description
+        if (command.entities.nlpDescription || command.entities.description) {
+          const description = command.entities.nlpDescription || command.entities.description || command.text
+          
+          // Debug the URL resolution process step by step
+          console.log('🎯 URL Resolution Debug:')
+          console.log('  1. command.entities.target:', command.entities.target)
+          console.log('  2. currentUrl state:', currentUrl)
+          console.log('  3. fallback:', 'https://google.com')
+          
+          const testUrl = command.entities.target || currentUrl || 'https://google.com'
+          
+          console.log('🧠 NLP Test Description:', description)
+          console.log('🔍 Voice command target:', command.entities.target)
+          console.log('🔍 Current URL from form:', currentUrl)
+          console.log('🌐 Final Target URL:', testUrl)
+          console.log('🌐 testUrl === "https://google.com":', testUrl === 'https://google.com')
+          
+          // Set NLP description and enable NLP
+          setNlpDescription(description)
+          setAiOptions(prev => ({ ...prev, useNLP: true }))
+          
+          // Switch to dashboard to see results
+          setCurrentView('dashboard')
+          
+          // Start the test immediately
+          console.log('🚀 About to call runAITest with URL:', testUrl)
+          await runAITest(testUrl, description)
+        }
+        break
+
       case 'show_results':
         setCurrentView('dashboard')
         break
@@ -208,6 +248,9 @@ function App() {
           securityScan: false,
           visualAI: false
         }))
+        if (command.entities.target) {
+          await runAITest(command.entities.target)
+        }
         break
 
       case 'performance_test':
@@ -216,6 +259,9 @@ function App() {
           predictiveAnalytics: true,
           realtimeMonitoring: true
         }))
+        if (command.entities.target) {
+          await runAITest(command.entities.target)
+        }
         break
 
       case 'security_test':
@@ -224,6 +270,9 @@ function App() {
           securityScan: true,
           enhancedA11y: false
         }))
+        if (command.entities.target) {
+          await runAITest(command.entities.target)
+        }
         break
 
       case 'visual_test':
@@ -231,6 +280,9 @@ function App() {
           ...prev,
           visualAI: true
         }))
+        if (command.entities.target) {
+          await runAITest(command.entities.target)
+        }
         break
 
       case 'help':
@@ -239,16 +291,25 @@ function App() {
     }
   }
 
-  const runAITest = async (url: string) => {
+  const runAITest = async (url: string, nlpDesc?: string) => {
+    console.log('🚀 runAITest called with parameters:')
+    console.log('  - url parameter:', url)
+    console.log('  - nlpDesc parameter:', nlpDesc)
+    console.log('  - currentUrl state:', currentUrl)
+    
     setLoading(true)
     setResults(null)
+    setCurrentView('dashboard') // Switch to dashboard to see results
 
     try {
       const formData = new FormData()
+      console.log('📤 runAITest sending URL to backend:', url)
+      console.log('📤 About to append to FormData - URL:', url)
       formData.append('url', url)
       formData.append('aiOptions', JSON.stringify(aiOptions))
-      if (nlpDescription) {
-        formData.append('nlpDescription', nlpDescription)
+      
+      if (nlpDesc || nlpDescription) {
+        formData.append('nlpDescription', nlpDesc || nlpDescription)
       }
 
       const response = await fetch('/api/tests/ai-run', {
@@ -258,8 +319,18 @@ function App() {
 
       const results = await response.json()
       setResults(results)
+      
+      if (voiceEnabled) {
+        const confidence = results.aiMetadata?.confidenceScore ? 
+          Math.round(results.aiMetadata.confidenceScore * 100) : 0
+        const message = `Test complete. ${results.testsPassed || 0} passed, ${results.testsFailed || 0} failed. AI confidence: ${confidence}%`
+        speakResult(message)
+      }
     } catch (error) {
       console.error('AI test execution failed:', error)
+      if (voiceEnabled) {
+        speakResult('Test failed. Please check the URL and try again.')
+      }
     } finally {
       setLoading(false)
     }
@@ -311,6 +382,7 @@ function App() {
                 onNlpChange={setNlpDescription}
                 onAiOptionToggle={toggleAIOption}
                 aiEnabled={aiEnabled}
+                onUrlChange={handleUrlChange}
               />
 
               {loading && (
