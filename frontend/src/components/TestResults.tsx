@@ -258,7 +258,7 @@ function TestResults({ results }: TestResultsProps) {
               ▶
             </span>
             <h3 style={{ margin: 0, fontSize: '18px', fontWeight: 700, color: '#1a1a1a' }}>
-              🤖 AI-Powered Analysis
+              🤖 AI Summary
             </h3>
           </div>
           <span className="ai-badge">
