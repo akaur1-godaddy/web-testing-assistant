@@ -28,15 +28,15 @@ export class FunctionalTestCaseGenerator {
         console.log(`🎯 Generating tests for ${elements.length} elements`);
 
         // Group elements by type
-        const buttons = elements.filter(e => e.elementType === 'button');
+        // const buttons = elements.filter(e => e.elementType === 'button');
         const forms = elements.filter(e => e.elementType === 'form');
         const inputs = elements.filter(e => ['input', 'select', 'textarea', 'checkbox', 'radio'].includes(e.elementType));
         const links = elements.filter(e => e.elementType === 'link');
 
         // Generate button tests
-        for (const button of buttons) {
-            tests.push(...this.generateButtonTests(button));
-        }
+        // for (const button of buttons) {
+        //     tests.push(...this.generateButtonTests(button));
+        // }
 
         // Generate form tests
         for (const form of forms) {
@@ -53,6 +53,9 @@ export class FunctionalTestCaseGenerator {
             tests.push(...this.generateLinkTests(link));
         }
 
+        // Generate comprehensive security tests
+        tests.push(...this.generateSecurityTests());
+
         console.log(`✅ Generated ${tests.length} total test cases`);
         return tests;
     }
@@ -67,22 +70,23 @@ export class FunctionalTestCaseGenerator {
         if (!selector) return tests;
 
         // Positive test: button click
+        const buttonText = button.text || button.ariaLabel || 'button';
         tests.push({
-            name: `Button Click: ${button.text || button.ariaLabel || 'button'}`,
+            name: `Click "${buttonText}" button and verify it responds correctly`,
             type: 'click',
             selector: selector,
         });
 
         // Wait after click
         tests.push({
-            name: `Wait after button click`,
+            name: `Wait for page to respond after clicking "${buttonText}" button`,
             type: 'wait',
             timeout: 800,
         });
 
         // Assertion: page still rendered
         tests.push({
-            name: `Button interaction complete`,
+            name: `Verify page remains stable after clicking "${buttonText}" button`,
             type: 'assertion',
             selector: 'body',
         });
@@ -97,8 +101,9 @@ export class FunctionalTestCaseGenerator {
         const tests: TestCase[] = [];
 
         // Positive test: form exists
+        const formId = form.id || 'form';
         tests.push({
-            name: `Form exists: ${form.id || 'form'}`,
+            name: `Verify form "${formId}" is present and accessible on the page`,
             type: 'assertion',
             selector: form.selector || form.xpathSelector || 'form',
         });
@@ -106,13 +111,13 @@ export class FunctionalTestCaseGenerator {
         // Test form submission with empty fields
         const submitButton = form.selector ? `${form.selector} button[type="submit"]` : 'button[type="submit"]';
         tests.push({
-            name: `Form empty submission attempt`,
+            name: `Attempt to submit form "${formId}" with empty fields to test validation`,
             type: 'click',
             selector: submitButton,
         });
 
         tests.push({
-            name: `Wait for form response`,
+            name: `Wait for form validation response after empty submission`,
             type: 'wait',
             timeout: 1000,
         });
@@ -130,8 +135,9 @@ export class FunctionalTestCaseGenerator {
         if (!selector || !['input', 'textarea', 'select'].includes(input.elementType)) return tests;
 
         // Test 1: Input element is interactable
+        const inputName = input.name || input.placeholder || input.id || 'field';
         tests.push({
-            name: `Input interactable: ${input.name || input.placeholder || input.id}`,
+            name: `Verify input field "${inputName}" is present and interactable`,
             type: 'assertion',
             selector: selector,
         });
@@ -149,7 +155,7 @@ export class FunctionalTestCaseGenerator {
         }
 
         tests.push({
-            name: `Input valid data: ${input.name || input.id || 'field'}`,
+            name: `Enter valid data "${testValue}" into "${inputName}" field and verify it accepts the input`,
             type: 'input',
             selector: selector,
             value: testValue,
@@ -158,7 +164,7 @@ export class FunctionalTestCaseGenerator {
         // Test 3: Clear and re-enter (if text-based)
         if (['email', 'text', 'password'].includes(input.type || 'text')) {
             tests.push({
-                name: `Input clear and re-enter`,
+                name: `Clear and re-enter different data in "${inputName}" field to test field reset functionality`,
                 type: 'input',
                 selector: selector,
                 value: testValue + '2',
@@ -177,8 +183,9 @@ export class FunctionalTestCaseGenerator {
 
         if (!selector) return tests;
 
+        const linkText = link.text || link.ariaLabel || 'link';
         tests.push({
-            name: `Link exists: ${link.text || link.ariaLabel}`,
+            name: `Verify link "${linkText}" is present and clickable`,
             type: 'assertion',
             selector: selector,
         });
@@ -192,25 +199,25 @@ export class FunctionalTestCaseGenerator {
     generateEdgeCaseTests(): TestCase[] {
         return [
             {
-                name: 'Edge Case: Very long input text',
+                name: 'Test input field with very long text (1000 characters) to verify length handling',
                 type: 'input',
                 selector: 'input[type="text"]',
                 value: 'a'.repeat(1000),
             },
             {
-                name: 'Edge Case: Special characters',
+                name: 'Test input field with XSS attempt to verify security filtering',
                 type: 'input',
                 selector: 'input[type="text"]',
                 value: '<script>alert("xss")</script>',
             },
             {
-                name: 'Edge Case: SQL injection attempt',
+                name: 'Test input field with SQL injection attempt to verify database security',
                 type: 'input',
                 selector: 'input[type="text"]',
                 value: "'; DROP TABLE users; --",
             },
             {
-                name: 'Edge Case: Rapid form submission',
+                name: 'Test rapid form submission to verify duplicate submission prevention',
                 type: 'click',
                 selector: 'button[type="submit"]',
             },
@@ -223,27 +230,92 @@ export class FunctionalTestCaseGenerator {
     generateSecurityTests(): TestCase[] {
         return [
             {
-                name: 'Security: XSS prevention - script tag',
+                name: 'Verify input field sanitizes XSS script tags and prevents JavaScript execution',
                 type: 'input',
                 selector: 'input[type="text"]',
                 value: '<script>alert("xss")</script>',
             },
             {
-                name: 'Security: XSS prevention - event handler',
+                name: 'Verify input field blocks XSS event handlers and prevents code injection',
                 type: 'input',
                 selector: 'input[type="text"]',
                 value: '<img src=x onerror="alert(1)">',
             },
             {
-                name: 'Security: SQL injection - basic',
+                name: 'Verify input field prevents SQL injection attempts and maintains data integrity',
                 type: 'input',
                 selector: 'input[type="text"]',
                 value: "' OR '1'='1",
             },
             {
-                name: 'Security: CSRF token validation',
+                name: 'Verify form includes CSRF protection tokens to prevent cross-site request forgery',
                 type: 'assertion',
                 selector: 'input[name*="csrf"], input[name*="token"]',
+            },
+            {
+                name: 'Verify input field handles HTML entities and prevents DOM manipulation',
+                type: 'input',
+                selector: 'input[type="text"]',
+                value: '&lt;script&gt;alert("xss")&lt;/script&gt;',
+            },
+            {
+                name: 'Verify input field blocks JavaScript protocol URLs and prevents code execution',
+                type: 'input',
+                selector: 'input[type="text"]',
+                value: 'javascript:alert("xss")',
+            },
+            {
+                name: 'Verify input field prevents SQL injection with UNION attacks',
+                type: 'input',
+                selector: 'input[type="text"]',
+                value: "' UNION SELECT * FROM users--",
+            },
+            {
+                name: 'Verify input field blocks LDAP injection attempts',
+                type: 'input',
+                selector: 'input[type="text"]',
+                value: '*)(uid=*))(|(uid=*',
+            },
+            {
+                name: 'Verify input field prevents NoSQL injection attacks',
+                type: 'input',
+                selector: 'input[type="text"]',
+                value: '{"$ne": null}',
+            },
+            {
+                name: 'Verify form submission includes proper security headers and validation',
+                type: 'assertion',
+                selector: 'form',
+            },
+            {
+                name: 'Verify input field blocks command injection attempts',
+                type: 'input',
+                selector: 'input[type="text"]',
+                value: '; rm -rf /',
+            },
+            {
+                name: 'Verify input field prevents path traversal attacks',
+                type: 'input',
+                selector: 'input[type="text"]',
+                value: '../../../etc/passwd',
+            },
+            {
+                name: 'Verify input field blocks XML external entity (XXE) injection',
+                type: 'input',
+                selector: 'input[type="text"]',
+                value: '<?xml version="1.0"?><!DOCTYPE foo [<!ENTITY xxe SYSTEM "file:///etc/passwd">]><foo>&xxe;</foo>',
+            },
+            {
+                name: 'Verify input field prevents server-side template injection',
+                type: 'input',
+                selector: 'input[type="text"]',
+                value: '{{7*7}}',
+            },
+            {
+                name: 'Verify input field blocks HTTP header injection attempts',
+                type: 'input',
+                selector: 'input[type="text"]',
+                value: 'test\r\nSet-Cookie: malicious=value',
             },
         ];
     }

@@ -7,6 +7,7 @@ import AIDashboard from './components/AIDashboard'
 import VoiceInterface from './components/VoiceInterface'
 import NavBar from './components/NavBar'
 import Footer from './components/Footer'
+import ProgressBar from './components/ProgressBar'
 
 export interface TestResult {
   success: boolean
@@ -131,7 +132,7 @@ function App() {
   const [voiceEnabled, setVoiceEnabled] = useState(true)
   const [nlpDescription, setNlpDescription] = useState('')
   const [currentUrl, setCurrentUrl] = useState('')
-  
+
   const handleUrlChange = (newUrl: string) => {
     console.log('🔄 App.handleUrlChange received:', newUrl)
     setCurrentUrl(newUrl)
@@ -203,28 +204,28 @@ function App() {
         // Handle NLP test generation with custom description
         if (command.entities.nlpDescription || command.entities.description) {
           const description = command.entities.nlpDescription || command.entities.description || command.text
-          
+
           // Debug the URL resolution process step by step
           console.log('🎯 URL Resolution Debug:')
           console.log('  1. command.entities.target:', command.entities.target)
           console.log('  2. currentUrl state:', currentUrl)
           console.log('  3. fallback:', 'https://google.com')
-          
+
           const testUrl = command.entities.target || currentUrl || 'https://google.com'
-          
+
           console.log('🧠 NLP Test Description:', description)
           console.log('🔍 Voice command target:', command.entities.target)
           console.log('🔍 Current URL from form:', currentUrl)
           console.log('🌐 Final Target URL:', testUrl)
           console.log('🌐 testUrl === "https://google.com":', testUrl === 'https://google.com')
-          
+
           // Set NLP description and enable NLP
           setNlpDescription(description)
           setAiOptions(prev => ({ ...prev, useNLP: true }))
-          
+
           // Switch to dashboard to see results
           setCurrentView('dashboard')
-          
+
           // Start the test immediately
           console.log('🚀 About to call runAITest with URL:', testUrl)
           await runAITest(testUrl, description)
@@ -296,7 +297,7 @@ function App() {
     console.log('  - url parameter:', url)
     console.log('  - nlpDesc parameter:', nlpDesc)
     console.log('  - currentUrl state:', currentUrl)
-    
+
     setLoading(true)
     setResults(null)
     setCurrentView('dashboard') // Switch to dashboard to see results
@@ -307,7 +308,7 @@ function App() {
       console.log('📤 About to append to FormData - URL:', url)
       formData.append('url', url)
       formData.append('aiOptions', JSON.stringify(aiOptions))
-      
+
       if (nlpDesc || nlpDescription) {
         formData.append('nlpDescription', nlpDesc || nlpDescription)
       }
@@ -319,9 +320,9 @@ function App() {
 
       const results = await response.json()
       setResults(results)
-      
+
       if (voiceEnabled) {
-        const confidence = results.aiMetadata?.confidenceScore ? 
+        const confidence = results.aiMetadata?.confidenceScore ?
           Math.round(results.aiMetadata.confidenceScore * 100) : 0
         const message = `Test complete. ${results.testsPassed || 0} passed, ${results.testsFailed || 0} failed. AI confidence: ${confidence}%`
         speakResult(message)
@@ -385,6 +386,8 @@ function App() {
                 onUrlChange={handleUrlChange}
               />
 
+
+
               {loading && (
                 <motion.div
                   className="loading-section"
@@ -392,11 +395,13 @@ function App() {
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.3 }}
                 >
-                  <div className="loading-spinner"></div>
-                  <div className="loading-text">
-                    <h3>Testing in Progress</h3>
-                    <p>Running comprehensive analysis with AI</p>
-                  </div>
+                  <ProgressBar
+                    isVisible={loading}
+                    duration={60000} // 60 seconds for AI testing
+                    onComplete={() => {
+                      console.log('Progress bar completed');
+                    }}
+                  />
                 </motion.div>
               )}
 

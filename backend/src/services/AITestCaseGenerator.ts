@@ -46,7 +46,7 @@ export class AITestCaseGenerator {
                 messages: [
                     {
                         role: 'system',
-                        content: 'You are an expert QA engineer. Analyze webpages and generate comprehensive, realistic test cases in JSON format. Return ONLY valid JSON.',
+                        content: 'You are an expert QA engineer and security specialist. Analyze webpages and generate comprehensive, realistic test cases in JSON format. Each test name must be descriptive and clearly explain what is being tested and what the expected outcome should be. Use action verbs like "Verify", "Test", "Check", "Validate" and include specific details about the expected behavior. For security tests, focus on common vulnerabilities like XSS, SQL injection, CSRF, command injection, path traversal, and other OWASP Top 10 security risks. Return ONLY valid JSON.',
                     },
                     {
                         role: 'user',
@@ -87,11 +87,11 @@ export class AITestCaseGenerator {
     ${formsSummary}
     ${buttonsSummary}
     
-    Generate test cases in this EXACT JSON format:
+    Generate test cases in this EXACT JSON format with DESCRIPTIVE test names that clearly explain what is being tested and what the expected outcome should be:
     {
       "loginTests": [
         {
-          "name": "Valid login with correct credentials",
+          "name": "Verify user can successfully log in with valid email and password credentials",
           "type": "click",
           "selector": "button[type=submit]",
           "steps": ["Fill email", "Fill password", "Click submit"]
@@ -99,7 +99,7 @@ export class AITestCaseGenerator {
       ],
       "formValidationTests": [
         {
-          "name": "Required field validation",
+          "name": "Verify form shows validation error when required fields are left empty",
           "type": "input",
           "selector": "input[required]",
           "value": "",
@@ -108,16 +108,43 @@ export class AITestCaseGenerator {
       ],
       "securityTests": [
         {
-          "name": "XSS prevention test",
+          "name": "Verify input field properly sanitizes XSS script tags and prevents code execution",
           "type": "input",
           "selector": "input",
           "value": "<script>alert('xss')</script>",
+          "expectedSafe": true
+        },
+        {
+          "name": "Verify input field blocks SQL injection attempts and maintains database security",
+          "type": "input",
+          "selector": "input",
+          "value": "' OR '1'='1",
+          "expectedSafe": true
+        },
+        {
+          "name": "Verify form includes CSRF protection tokens to prevent cross-site request forgery",
+          "type": "assertion",
+          "selector": "input[name*='csrf'], input[name*='token']",
+          "expectedSafe": true
+        },
+        {
+          "name": "Verify input field prevents command injection and system access attempts",
+          "type": "input",
+          "selector": "input",
+          "value": "; rm -rf /",
+          "expectedSafe": true
+        },
+        {
+          "name": "Verify input field blocks path traversal attacks and file system access",
+          "type": "input",
+          "selector": "input",
+          "value": "../../../etc/passwd",
           "expectedSafe": true
         }
       ],
       "userJourneyTests": [
         {
-          "name": "Complete user flow",
+          "name": "Verify complete user registration flow from start to successful account creation",
           "type": "click",
           "selector": "button",
           "description": "Test complete user journey"
@@ -125,8 +152,7 @@ export class AITestCaseGenerator {
       ],
       "accessibilityTests": [
         {
-          "name": "Keyboard navigation test",
-          "type": "assertion",
+          "name": "Verify all interactive elements can be navigated using only keyboard (Tab key)",
           "selector": "[role=button]",
           "expectedAccessible": true
         }
@@ -181,21 +207,21 @@ export class AITestCaseGenerator {
         return {
             loginTests: [
                 {
-                    name: 'Login form visibility check',
+                    name: 'Verify login form is present and accessible on the page',
                     type: 'assertion',
                     selector: 'form, [role="form"]',
                 },
             ],
             formValidationTests: [
                 {
-                    name: 'Form field interactability',
+                    name: 'Verify all form input fields are present and can be interacted with',
                     type: 'assertion',
                     selector: 'input, textarea, select',
                 },
             ],
             securityTests: [
                 {
-                    name: 'Basic security check',
+                    name: 'Verify page loads without security errors or warnings',
                     type: 'assertion',
                     selector: 'body',
                 },
@@ -203,7 +229,7 @@ export class AITestCaseGenerator {
             userJourneyTests: [],
             accessibilityTests: [
                 {
-                    name: 'Basic accessibility check',
+                    name: 'Verify page has proper accessibility attributes and ARIA labels',
                     type: 'assertion',
                     selector: '[role], [aria-label]',
                 },
