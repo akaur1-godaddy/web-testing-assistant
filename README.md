@@ -3,6 +3,7 @@
 **An intelligent testing platform that combines GPT-4, Puppeteer, and Chrome DevTools to automatically generate, execute, and analyze web tests.**
 
 <img width="1693" height="1027" alt="image" src="https://github.com/user-attachments/assets/6f5189bf-8ae1-4851-9892-cc041d1de741" />
+<img width="1703" height="1036" alt="image" src="https://github.com/user-attachments/assets/3f96896a-d568-492b-8afb-d13a58df5fc1" />
 
 
 ---
@@ -18,7 +19,8 @@ TestPilot.AI revolutionizes web testing by using **AI to automatically generate 
 - 🎤 **Voice commands** - Natural language test generation
 - 📊 **Non-technical tooltips** - Makes metrics understandable for Product Owners
 
----
+---<img width="1175" height="918" alt="image" src="https://github.com/user-attachments/assets/12118032-ec4f-41ac-afe4-dcc7b87a0761" />
+
 
 ## 🌟 Key AI Features
 
@@ -105,6 +107,12 @@ Hover over any metric to see simple, business-friendly explanations:
 - *"Generate test for login flow with invalid credentials"*
 
 ---
+
+<img width="1680" height="1040" alt="image" src="https://github.com/user-attachments/assets/829258ad-cbc8-4d2e-b613-6a951f05dbd9" />
+
+<img width="1706" height="994" alt="image" src="https://github.com/user-attachments/assets/947a699b-44f7-417a-8a74-dd1d3e10b829" />
+<img width="1702" height="1026" alt="image" src="https://github.com/user-attachments/assets/f7cb5a67-d2f9-42cd-ac19-17d5a900827c" />
+
 
 ## 🚀 Quick Start
 
