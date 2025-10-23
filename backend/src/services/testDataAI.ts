@@ -27,7 +27,7 @@ export class TestDataAI {
     console.log(`🎲 Generating ${count} realistic user profiles...`);
 
     const users: GeneratedUserData[] = [];
-    
+
     for (let i = 0; i < count; i++) {
       const user = await this.generateSingleUser(options);
       users.push(user);
@@ -45,7 +45,7 @@ export class TestDataAI {
     console.log('🔬 Generating edge case scenarios...');
 
     const scenarios: EdgeCaseScenario[] = [];
-    
+
     // Generate different types of edge cases
     scenarios.push(...await this.generateBoundaryValueTests(context));
     scenarios.push(...await this.generateSpecialCharacterTests(context));
@@ -87,7 +87,7 @@ export class TestDataAI {
     console.log(`⚡ Creating ${stressLevel} performance stress tests for ${targetEndpoint}...`);
 
     const stressConfig = this.getStressConfig(stressLevel);
-    
+
     return {
       endpoint: targetEndpoint,
       level: stressLevel,
@@ -203,10 +203,10 @@ export class TestDataAI {
 
     // Use pairwise testing algorithm to reduce test combinations
     const pairwiseMatrix = this.generatePairwiseMatrix(parameters);
-    
+
     // Add edge cases and boundary values
     const edgeCaseMatrix = this.generateEdgeCaseMatrix(parameters);
-    
+
     // Combine matrices
     const combinedMatrix = [...pairwiseMatrix, ...edgeCaseMatrix];
 
@@ -245,7 +245,7 @@ export class TestDataAI {
   private async generateSingleUser(options: UserDataOptions): Promise<GeneratedUserData> {
     const demographics = options.demographics || 'mixed';
     const region = options.region || 'US';
-    
+
     // Use AI to generate realistic user data
     const prompt = `
     Generate a realistic user profile for testing with these characteristics:
@@ -265,7 +265,7 @@ export class TestDataAI {
       });
 
       const userData = JSON.parse(response.choices[0].message?.content || '{}');
-      
+
       return {
         ...userData,
         id: this.generateUniqueId(),
@@ -377,7 +377,7 @@ export class TestDataAI {
       {
         name: 'Authentication Bypass Attempt',
         description: 'Test for authentication bypass vulnerabilities',
-        testData: { 
+        testData: {
           username: 'admin\' OR \'1\'=\'1',
           password: 'anything',
         },
@@ -396,7 +396,7 @@ export class TestDataAI {
       {
         name: 'CSRF Attack Simulation',
         description: 'Test for Cross-Site Request Forgery vulnerabilities',
-        testData: { 
+        testData: {
           origin: 'https://malicious-site.com',
           referrer: 'https://malicious-site.com',
         },
@@ -412,7 +412,7 @@ export class TestDataAI {
       {
         name: 'Screen Reader Navigation',
         description: 'Test navigation using only keyboard and screen reader',
-        testData: { 
+        testData: {
           navigationMethod: 'keyboard-only',
           screenReader: 'enabled',
         },

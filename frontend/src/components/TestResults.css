@@ -108,7 +108,7 @@
 }
 
 .metric-value {
-  
+
   font-weight: 600;
   color: black;
 }
@@ -322,6 +322,7 @@
     opacity: 0;
     transform: translateY(-10px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -334,6 +335,7 @@
     max-height: 0;
     transform: translateY(-10px);
   }
+
   to {
     opacity: 1;
     max-height: 1000px;
@@ -376,10 +378,13 @@
 }
 
 @keyframes aiPulse {
-  0%, 100% {
+
+  0%,
+  100% {
     transform: scale(1);
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   }
+
   50% {
     transform: scale(1.05);
     box-shadow: 0 4px 16px rgba(255, 255, 255, 0.3);
@@ -394,7 +399,7 @@
   max-height: 600px;
   overflow-y: auto;
   margin-top: 1rem;
-  
+
 }
 
 /* Custom scrollbar for AI summary */
@@ -448,7 +453,7 @@
   .results-summary {
     grid-template-columns: repeat(2, 1fr);
   }
-  
+
   .devtools-section {
     padding: 1rem;
   }
