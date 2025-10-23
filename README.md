@@ -2,7 +2,8 @@
 
 **An intelligent testing platform that combines GPT-4, Puppeteer, and Chrome DevTools to automatically generate, execute, and analyze web tests.**
 
-![TestPilot.AI Dashboard](https://github.com/user-attachments/assets/476c6d22-cdd2-40c6-9a22-2b279e2b3445)
+<img width="1693" height="1027" alt="image" src="https://github.com/user-attachments/assets/6f5189bf-8ae1-4851-9892-cc041d1de741" />
+
 
 ---
 
