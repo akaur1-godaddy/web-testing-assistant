@@ -244,6 +244,9 @@ MIT License - See LICENSE file for details
 **Repository**: https://github.com/akaur1-godaddy/web-testing-assistant  
 **Live Demo**: Available on request
 
+ Detailed Documentaion : https://godaddy-corp.atlassian.net/wiki/spaces/APK/pages/3985604741/TestPilot.AI+-+Complete+Architecture+Documentation
+ https://godaddy-corp.atlassian.net/wiki/spaces/APK/pages/3985604741/TestPilot.AI+-+Complete+Architecture+Documentation
+
 ---
 
 *Built for Hackathon 2024 - Revolutionizing web testing with AI* 🚀
