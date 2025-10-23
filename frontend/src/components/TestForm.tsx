@@ -28,7 +28,6 @@ function TestForm({
   const [password, setPassword] = useState('')
   const [testFile, setTestFile] = useState<File | null>(null)
   const [step1Expanded, setStep1Expanded] = useState(false)
-  const [step2Expanded, setStep2Expanded] = useState(false)
 
   // AI option descriptions
   const aiOptionDescriptions: Record<string, string> = {
@@ -47,7 +46,6 @@ function TestForm({
 
     e.preventDefault()
     setStep1Expanded(false)
-    setStep2Expanded(false)
     if (!url) {
       alert('Please enter a URL')
       return
@@ -225,83 +223,57 @@ function TestForm({
                   Select one file in JSON, JavaScript, or plain text format
                 </small>
               </div>
+
+              {/* NLP Section - Now inside Advanced Configuration */}
+              {aiEnabled && aiOptions && onNlpChange && onAiOptionToggle && (
+                <>
+                  <p className="options-label">Add Natural Language Test Description</p>
+                  <div className="form-group">
+                    <textarea
+                      id="nlpInput"
+                      className="nlp-textarea"
+                      placeholder="Describe your tests in plain English: 'Test the login flow with invalid credentials and verify error messages appear correctly'"
+                      value={nlpDescription || ''}
+                      onChange={(e) => onNlpChange(e.target.value)}
+                      rows={4}
+                    />
+                  </div>
+                  <p className="options-label">Use AI Options</p>
+
+                  <div className="ai-options">
+                    <div className="ai-options-grid">
+                      {Object.entries(aiOptions).map(([key, value]) => (
+                        <div key={key} className="ai-option-wrapper">
+                          <button
+                            type="button"
+                            className={`ai-option-toggle ${value ? 'active' : ''}`}
+                            onClick={() => onAiOptionToggle(key)}
+                            aria-label={`${key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase())} - ${aiOptionDescriptions[key]}`}
+                          >
+                            <span className="toggle-indicator"></span>
+                            <span className="toggle-label">
+                              {key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase())}
+                            </span>
+                            <span className="info-icon" aria-hidden="true">
+                              <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                                <circle cx="8" cy="8" r="7" stroke="currentColor" strokeWidth="1.5" />
+                                <path d="M8 7V11" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+                                <circle cx="8" cy="5" r="0.5" fill="currentColor" />
+                              </svg>
+                            </span>
+                          </button>
+                          <div className="ai-option-tooltip" role="tooltip" aria-hidden="true">
+                            {aiOptionDescriptions[key]}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </>
+              )}
             </>
           )}
         </div>
-
-        {/* NLP Section - Integrated */}
-        {aiEnabled && aiOptions && onNlpChange && onAiOptionToggle && (
-          <div>
-            <div
-              className="section-header clickable"
-              onClick={() => setStep2Expanded(!step2Expanded)}
-              role="button"
-              tabIndex={0}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter' || e.key === ' ') {
-                  e.preventDefault()
-                  setStep2Expanded(!step2Expanded)
-                }
-              }}
-              aria-expanded={step2Expanded}
-            >
-              <span className="step-badge">Step 2</span>
-              <h3>Add Natural Language Test Description</h3>
-              <span className={`collapse-icon ${step2Expanded ? 'expanded' : ''}`}>
-                <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                  <path d="M4 6L8 10L12 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                </svg>
-              </span>
-            </div>
-            {step2Expanded && (
-              <>
-                <p className="options-label">Add Description</p>
-                <div className="form-group">
-                  <textarea
-                    id="nlpInput"
-                    className="nlp-textarea"
-                    placeholder="Describe your tests in plain English: 'Test the login flow with invalid credentials and verify error messages appear correctly'"
-                    value={nlpDescription || ''}
-                    onChange={(e) => onNlpChange(e.target.value)}
-                    rows={4}
-                  />
-
-                </div>
-                <p className="options-label">Use AI Options</p>
-
-                <div className="ai-options">
-                  <div className="ai-options-grid">
-                    {Object.entries(aiOptions).map(([key, value]) => (
-                      <div key={key} className="ai-option-wrapper">
-                        <button
-                          type="button"
-                          className={`ai-option-toggle ${value ? 'active' : ''}`}
-                          onClick={() => onAiOptionToggle(key)}
-                          aria-label={`${key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase())} - ${aiOptionDescriptions[key]}`}
-                        >
-                          <span className="toggle-indicator"></span>
-                          <span className="toggle-label">
-                            {key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase())}
-                          </span>
-                          <span className="info-icon" aria-hidden="true">
-                            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                              <circle cx="8" cy="8" r="7" stroke="currentColor" strokeWidth="1.5" />
-                              <path d="M8 7V11" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-                              <circle cx="8" cy="5" r="0.5" fill="currentColor" />
-                            </svg>
-                          </span>
-                        </button>
-                        <div className="ai-option-tooltip" role="tooltip" aria-hidden="true">
-                          {aiOptionDescriptions[key]}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </>
-            )}
-          </div>
-        )}
 
         {/* Submit Button */}
         <button type="submit" className="submit-button">

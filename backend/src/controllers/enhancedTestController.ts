@@ -314,8 +314,12 @@ export class EnhancedTestController {
 
         // Enhance with AI-generated edge cases
         if (aiOptions?.generateEdgeCases) {
+          console.log('🔮 Generating AI edge cases...');
+          console.log(`   Base test cases: ${testCases.length}`);
           const edgeCases = await nlpGenerator.generateEdgeCases(testCases);
+          console.log(`   Generated edge cases: ${edgeCases.length}`);
           testCases.push(...edgeCases);
+          console.log(`   Total test cases after edge cases: ${testCases.length}`);
         }
       }
 

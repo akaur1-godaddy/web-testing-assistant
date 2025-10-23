@@ -68,6 +68,12 @@ export class NLPTestGenerator {
    * Generate edge cases for existing test scenarios
    */
   async generateEdgeCases(baseTests: TestCase[]): Promise<TestCase[]> {
+    // Check if we have a valid API key
+    if (!process.env.OPENAI_API_KEY || process.env.OPENAI_API_KEY === 'test' || process.env.OPENAI_API_KEY === 'demo_mode' || process.env.OPENAI_API_KEY.includes('your_ope')) {
+      console.log('🎭 Using mock edge case generation (no valid OpenAI API key)');
+      return this.generateMockEdgeCases(baseTests);
+    }
+
     const prompt = `
     Given these base test cases:
     ${JSON.stringify(baseTests, null, 2)}
@@ -94,9 +100,83 @@ export class NLPTestGenerator {
 
       return this.parseTestCases(response.choices[0].message?.content || '[]');
     } catch (error) {
-      console.error('Edge case generation failed:', error);
-      return [];
+      console.error('Edge case generation failed, using mock data:', error);
+      return this.generateMockEdgeCases(baseTests);
     }
+  }
+
+  /**
+   * Generate mock edge cases when OpenAI is unavailable
+   */
+  private generateMockEdgeCases(baseTests: TestCase[]): TestCase[] {
+    const edgeCases: TestCase[] = [];
+    
+    // Add ~9 generic edge cases
+    edgeCases.push({
+      name: 'Test with empty form inputs',
+      type: 'interaction',
+      selector: 'input',
+      action: 'fill',
+      value: '',
+      expected: 'Validation error shown'
+    });
+    
+    edgeCases.push({
+      name: 'Test with maximum length input (255 chars)',
+      type: 'interaction',
+      selector: 'input',
+      action: 'fill',
+      value: 'a'.repeat(255),
+      expected: 'Input accepted or truncated'
+    });
+    
+    edgeCases.push({
+      name: 'Test with special characters (!@#$%^&*)',
+      type: 'interaction',
+      selector: 'input',
+      action: 'fill',
+      value: '!@#$%^&*()',
+      expected: 'Special characters handled correctly'
+    });
+    
+    edgeCases.push({
+      name: 'Test page load under slow network (3G)',
+      type: 'assertion',
+      expected: 'Page loads within 10 seconds'
+    });
+    
+    edgeCases.push({
+      name: 'Test navigation with browser back button',
+      type: 'assertion',
+      expected: 'Page state preserved'
+    });
+    
+    edgeCases.push({
+      name: 'Test form submission with duplicate requests',
+      type: 'assertion',
+      expected: 'Duplicate submissions prevented'
+    });
+    
+    edgeCases.push({
+      name: 'Test keyboard navigation (Tab key)',
+      type: 'assertion',
+      expected: 'All interactive elements accessible via keyboard'
+    });
+    
+    edgeCases.push({
+      name: 'Test with JavaScript disabled',
+      type: 'assertion',
+      expected: 'Core functionality still works'
+    });
+    
+    edgeCases.push({
+      name: 'Test responsive design at mobile viewport (375px)',
+      type: 'assertion',
+      expected: 'Layout adapts correctly'
+    });
+    
+    console.log(`✅ Generated ${edgeCases.length} mock edge cases`);
+    return edgeCases;
   }
 
   /**

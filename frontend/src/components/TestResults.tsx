@@ -39,9 +39,9 @@ function TestResults({ results }: TestResultsProps) {
     // 2. Performance Analysis
     try {
       if (results.performance || results.devTools?.performance) {
-        const loadTime = results.performance?.loadTime || 0
-        const fcp = results.devTools?.performance?.firstContentfulPaint || 0
-        const lcp = results.devTools?.performance?.largestContentfulPaint || 0
+        const loadTime = Math.round(results.performance?.loadTime || 0)
+        const fcp = Math.round(results.devTools?.performance?.firstContentfulPaint || 0)
+        const lcp = Math.round(results.devTools?.performance?.largestContentfulPaint || 0)
         
         let perfContent = ''
         if (loadTime < 2000 && loadTime > 0) {
@@ -307,11 +307,15 @@ function TestResults({ results }: TestResultsProps) {
           <h3>⚡ Performance Metrics</h3>
           <div className="performance-grid">
             <div className="metric">
-              <span className="metric-label">Load Time:</span>
+              <span className="metric-label tooltip-trigger" data-tooltip="How long it takes for your entire page to fully load. Under 3 seconds is good, over 5 seconds means users will likely leave.">
+                Load Time: ℹ️
+              </span>
               <span className="metric-value">{results.performance.loadTime}ms</span>
             </div>
             <div className="metric">
-              <span className="metric-label">DOM Content Loaded:</span>
+              <span className="metric-label tooltip-trigger" data-tooltip="When your HTML is ready and JavaScript can start running. Faster means interactive features work sooner for users.">
+                DOM Content Loaded: ℹ️
+              </span>
               <span className="metric-value">{results.performance.domContentLoaded}ms</span>
             </div>
           </div>
@@ -329,19 +333,25 @@ function TestResults({ results }: TestResultsProps) {
               <div className="performance-grid">
                 {results.devTools.performance.firstContentfulPaint && (
                   <div className="metric">
-                    <span className="metric-label">First Contentful Paint:</span>
+                    <span className="metric-label tooltip-trigger" data-tooltip="When users see the first bit of content appear on screen. Under 1.8 seconds is excellent. This tells users your site is loading.">
+                      First Contentful Paint: ℹ️
+                    </span>
                     <span className="metric-value">{Math.round(results.devTools.performance.firstContentfulPaint)}ms</span>
                   </div>
                 )}
                 {results.devTools.performance.largestContentfulPaint !== undefined && (
                   <div className="metric">
-                    <span className="metric-label">Largest Contentful Paint:</span>
+                    <span className="metric-label tooltip-trigger" data-tooltip="When the main content (biggest image or text block) appears on screen. Under 2.5 seconds is good. This is when users see your actual content.">
+                      Largest Contentful Paint: ℹ️
+                    </span>
                     <span className="metric-value">{Math.round(results.devTools.performance.largestContentfulPaint)}ms</span>
                   </div>
                 )}
                 {results.devTools.performance.cumulativeLayoutShift !== undefined && (
                   <div className="metric">
-                    <span className="metric-label">Cumulative Layout Shift:</span>
+                    <span className="metric-label tooltip-trigger" data-tooltip="How much your page jumps around while loading. Under 0.1 is good. High numbers mean buttons move and users click the wrong thing by accident.">
+                      Cumulative Layout Shift: ℹ️
+                    </span>
                     <span className="metric-value">{results.devTools.performance.cumulativeLayoutShift.toFixed(3)}</span>
                   </div>
                 )}
@@ -352,7 +362,9 @@ function TestResults({ results }: TestResultsProps) {
           {/* Accessibility */}
           {results.devTools.accessibility && (
             <div className="devtools-card">
-              <h4>♿ Accessibility Score</h4>
+              <h4 className="tooltip-trigger" data-tooltip="How easy your website is for people with disabilities to use (screen readers, keyboard navigation, color contrast). 90+ is excellent, 50-89 needs improvement, below 50 is serious.">
+                ♿ Accessibility Score ℹ️
+              </h4>
               <div className="accessibility-score" style={{
                 fontSize: '48px',
                 fontWeight: 'bold',
@@ -379,14 +391,20 @@ function TestResults({ results }: TestResultsProps) {
           {/* Network */}
           {results.devTools.network && (
             <div className="devtools-card">
-              <h4>🌐 Network Analysis</h4>
+              <h4 className="tooltip-trigger" data-tooltip="Shows how your page loads files (images, scripts, styles) from the server. More requests = slower page. Failed requests = broken features or missing images.">
+                🌐 Network Analysis ℹ️
+              </h4>
               <div className="performance-grid">
                 <div className="metric">
-                  <span className="metric-label">Total Requests:</span>
+                  <span className="metric-label tooltip-trigger" data-tooltip="How many files your page needs to download (images, scripts, fonts, etc). Under 50 is good, over 100 can slow things down.">
+                    Total Requests: ℹ️
+                  </span>
                   <span className="metric-value">{results.devTools.network.totalRequests}</span>
                 </div>
                 <div className="metric">
-                  <span className="metric-label">Failed Requests:</span>
+                  <span className="metric-label tooltip-trigger" data-tooltip="Files that didn't load properly. Even 1 failed request can mean broken images, missing buttons, or features that don't work. Should be 0.">
+                    Failed Requests: ℹ️
+                  </span>
                   <span className="metric-value" style={{ color: results.devTools.network.failedRequests > 0 ? '#dc3545' : '#28a745' }}>
                     {results.devTools.network.failedRequests}
                   </span>
@@ -394,7 +412,9 @@ function TestResults({ results }: TestResultsProps) {
               </div>
               {results.devTools.network.slowestResource && (
                 <div className="slowest-resource">
-                  <p><strong>Slowest Resource:</strong></p>
+                  <p><strong className="tooltip-trigger" data-tooltip="The file that takes the longest to download. This is your biggest bottleneck - optimize this first to speed up your page.">
+                    Slowest Resource: ℹ️
+                  </strong></p>
                   <p style={{ fontSize: '12px', wordBreak: 'break-all' }}>{results.devTools.network.slowestResource.url}</p>
                   <p>Duration: {results.devTools.network.slowestResource.duration}ms</p>
                 </div>
@@ -821,10 +841,14 @@ function TestResults({ results }: TestResultsProps) {
       {/* Console */}
       {results.devTools && results.devTools.console && (results.devTools.console.errors.length > 0 || results.devTools.console.warnings.length > 0) && (
         <div className='console-section'>
-          <h3>📋 Console Messages</h3>
+          <h3 className="tooltip-trigger" data-tooltip="JavaScript errors and warnings found in the browser console. Errors can break features. Warnings are potential issues that should be fixed to avoid future problems.">
+            📋 Console Messages ℹ️
+          </h3>
           {results.devTools.console.errors.length > 0 && (
             <div className="console-errors">
-              <h4 style={{ color: '#dc3545' }}>❌ Errors ({results.devTools.console.errors.length})</h4>
+              <h4 style={{ color: '#dc3545' }} className="tooltip-trigger" data-tooltip="JavaScript code that crashed or failed. These MUST be fixed - they can break buttons, forms, and other interactive features for users.">
+                ❌ Errors ({results.devTools.console.errors.length}) ℹ️
+              </h4>
               <ul>
                 {results.devTools.console.errors.slice(0, 5).map((error, idx) => (
                   <li key={idx} style={{ fontSize: '12px', color: '#dc3545' }}>{error}</li>
@@ -834,7 +858,9 @@ function TestResults({ results }: TestResultsProps) {
           )}
           {results.devTools.console.warnings.length > 0 && (
             <div className="console-warnings">
-              <h4 style={{ color: '#ffc107' }}>⚠️ Warnings ({results.devTools.console.warnings.length})</h4>
+              <h4 style={{ color: '#ffc107' }} className="tooltip-trigger" data-tooltip="Not critical but should be addressed. These are like yellow flags - the site works now, but these issues could cause problems later or slow things down.">
+                ⚠️ Warnings ({results.devTools.console.warnings.length}) ℹ️
+              </h4>
               <ul>
                 {results.devTools.console.warnings.slice(0, 5).map((warning, idx) => (
                   <li key={idx} style={{ fontSize: '12px', color: '#856404' }}>{warning}</li>

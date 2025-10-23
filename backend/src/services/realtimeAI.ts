@@ -128,21 +128,23 @@ export class RealtimeAI extends EventEmitter {
       }
 
       try {
-        const perfData = await this.page.evaluate(() => {
-          const navigation = performance.getEntriesByType('navigation')[0] as PerformanceNavigationTiming;
-          const paint = performance.getEntriesByType('paint');
-          
-          return {
-            loadTime: navigation?.loadEventEnd - navigation?.fetchStart || 0,
-            domContentLoaded: navigation?.domContentLoadedEventEnd - navigation?.fetchStart || 0,
-            firstContentfulPaint: paint.find(p => p.name === 'first-contentful-paint')?.startTime || 0,
-            memory: (performance as any).memory ? {
-              usedJSHeapSize: (performance as any).memory.usedJSHeapSize,
-              totalJSHeapSize: (performance as any).memory.totalJSHeapSize,
-            } : null,
-            timestamp: Date.now(),
-          };
-        });
+        const perfData = await this.page.evaluate(`
+          (function() {
+            const navigation = performance.getEntriesByType('navigation')[0];
+            const paint = performance.getEntriesByType('paint');
+            
+            return {
+              loadTime: navigation ? (navigation.loadEventEnd - navigation.fetchStart) : 0,
+              domContentLoaded: navigation ? (navigation.domContentLoadedEventEnd - navigation.fetchStart) : 0,
+              firstContentfulPaint: paint.find(function(p) { return p.name === 'first-contentful-paint'; })?.startTime || 0,
+              memory: performance.memory ? {
+                usedJSHeapSize: performance.memory.usedJSHeapSize,
+                totalJSHeapSize: performance.memory.totalJSHeapSize,
+              } : null,
+              timestamp: Date.now(),
+            };
+          })()
+        `);
 
         this.metrics.performance = {
           ...this.metrics.performance,
@@ -262,36 +264,38 @@ export class RealtimeAI extends EventEmitter {
   private async monitorUserInteractions(): Promise<void> {
     try {
       // Monitor clicks, form submissions, etc.
-      await this.page.evaluate(() => {
-        const sendInteractionEvent = (type: string, target: Element, data?: any) => {
-          (window as any).monitoringData = (window as any).monitoringData || [];
-          (window as any).monitoringData.push({
-            type,
-            target: target.tagName + (target.id ? `#${target.id}` : ''),
-            timestamp: Date.now(),
-            data,
+      await this.page.evaluate(`
+        (function() {
+          const sendInteractionEvent = function(type, target, data) {
+            window.monitoringData = window.monitoringData || [];
+            window.monitoringData.push({
+              type: type,
+              target: target.tagName + (target.id ? '#' + target.id : ''),
+              timestamp: Date.now(),
+              data: data,
+            });
+          };
+
+          // Monitor clicks
+          document.addEventListener('click', function(e) {
+            sendInteractionEvent('click', e.target);
           });
-        };
 
-        // Monitor clicks
-        document.addEventListener('click', (e) => {
-          sendInteractionEvent('click', e.target as Element);
-        });
-
-        // Monitor form submissions
-        document.addEventListener('submit', (e) => {
-          sendInteractionEvent('form-submit', e.target as Element);
-        });
-
-        // Monitor input changes
-        document.addEventListener('input', (e) => {
-          const target = e.target as HTMLInputElement;
-          sendInteractionEvent('input', target, {
-            type: target.type,
-            value: target.type === 'password' ? '[HIDDEN]' : target.value.substring(0, 20),
+          // Monitor form submissions
+          document.addEventListener('submit', function(e) {
+            sendInteractionEvent('form-submit', e.target);
           });
-        });
-      });
+
+          // Monitor input changes
+          document.addEventListener('input', function(e) {
+            const target = e.target;
+            sendInteractionEvent('input', target, {
+              type: target.type,
+              value: target.type === 'password' ? '[HIDDEN]' : target.value.substring(0, 20),
+            });
+          });
+        })();
+      `);
 
       // Periodically collect interaction data
       const interactionInterval = setInterval(async () => {
@@ -301,11 +305,13 @@ export class RealtimeAI extends EventEmitter {
         }
 
         try {
-          const interactions = await this.page.evaluate(() => {
-            const data = (window as any).monitoringData || [];
-            (window as any).monitoringData = []; // Clear after reading
-            return data;
-          });
+          const interactions = await this.page.evaluate(`
+            (function() {
+              const data = window.monitoringData || [];
+              window.monitoringData = []; // Clear after reading
+              return data;
+            })()
+          `);
 
           interactions.forEach((interaction: UserInteraction) => {
             this.metrics.userInteractions.push(interaction);
@@ -338,15 +344,17 @@ export class RealtimeAI extends EventEmitter {
       }
 
       try {
-        const memoryInfo = await this.page.evaluate(() => {
-          const memory = (performance as any).memory;
-          return memory ? {
-            usedJSHeapSize: memory.usedJSHeapSize,
-            totalJSHeapSize: memory.totalJSHeapSize,
-            jsHeapSizeLimit: memory.jsHeapSizeLimit,
-            timestamp: Date.now(),
-          } : null;
-        });
+        const memoryInfo = await this.page.evaluate(`
+          (function() {
+            const memory = performance.memory;
+            return memory ? {
+              usedJSHeapSize: memory.usedJSHeapSize,
+              totalJSHeapSize: memory.totalJSHeapSize,
+              jsHeapSizeLimit: memory.jsHeapSizeLimit,
+              timestamp: Date.now(),
+            } : null;
+          })()
+        `);
 
         if (memoryInfo) {
           this.metrics.memoryUsage.push(memoryInfo);
@@ -372,27 +380,29 @@ export class RealtimeAI extends EventEmitter {
    */
   private async monitorDOMChanges(): Promise<void> {
     try {
-      await this.page.evaluate(() => {
-        let changeCount = 0;
-        const observer = new MutationObserver((mutations) => {
-          changeCount += mutations.length;
-          
-          // Report significant changes
-          if (changeCount > 10) {
-            (window as any).domChangeData = {
-              changes: changeCount,
-              timestamp: Date.now(),
-            };
-            changeCount = 0;
-          }
-        });
+      await this.page.evaluate(`
+        (function() {
+          let changeCount = 0;
+          const observer = new MutationObserver(function(mutations) {
+            changeCount += mutations.length;
+            
+            // Report significant changes
+            if (changeCount > 10) {
+              window.domChangeData = {
+                changes: changeCount,
+                timestamp: Date.now(),
+              };
+              changeCount = 0;
+            }
+          });
 
-        observer.observe(document.body, {
-          childList: true,
-          subtree: true,
-          attributes: true,
-        });
-      });
+          observer.observe(document.body, {
+            childList: true,
+            subtree: true,
+            attributes: true,
+          });
+        })()
+      `);
 
       // Periodically check for DOM changes
       const domInterval = setInterval(async () => {
@@ -402,11 +412,13 @@ export class RealtimeAI extends EventEmitter {
         }
 
         try {
-          const domData = await this.page.evaluate(() => {
-            const data = (window as any).domChangeData;
-            (window as any).domChangeData = null;
-            return data;
-          });
+          const domData = await this.page.evaluate(`
+            (function() {
+              const data = window.domChangeData;
+              window.domChangeData = null;
+              return data;
+            })()
+          `);
 
           if (domData) {
             this.emit('dom-changes', domData);

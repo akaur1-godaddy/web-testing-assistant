@@ -25,10 +25,6 @@ const AIDashboard: React.FC<AIDashboardProps> = ({
   const predictionChartRef = useRef<SVGSVGElement>(null);
   const heatmapRef = useRef<SVGSVGElement>(null);
   const networkGraphRef = useRef<SVGSVGElement>(null);
-  
-  // Separate refs for Predictions tab
-  const predictionsPerformanceChartRef = useRef<SVGSVGElement>(null);
-  const predictionsFutureChartRef = useRef<SVGSVGElement>(null);
 
   useEffect(() => {
     // Initialize WebSocket for real-time data
@@ -60,18 +56,6 @@ const AIDashboard: React.FC<AIDashboardProps> = ({
       createVisualizationss();
     }
   }, [testResults, activeTab]);
-
-  // Render charts when Predictions tab becomes active
-  useEffect(() => {
-    if (activeTab === 'predictions' && testResults) {
-      // Longer delay to ensure DOM elements are fully rendered
-      const timer = setTimeout(() => {
-        createPredictionsTabCharts();
-      }, 500);
-      
-      return () => clearTimeout(timer);
-    }
-  }, [activeTab, testResults]);
 
   const handleRealtimeUpdate = (data: any) => {
     switch (data.type) {
@@ -184,15 +168,6 @@ const AIDashboard: React.FC<AIDashboardProps> = ({
     createPredictionChart();
     createTestHeatmap();
     createNetworkGraph();
-  };
-
-  const createPredictionsTabCharts = () => {
-    try {
-      createPredictionsPerformanceChart();
-      createPredictionsFutureChart();
-    } catch (error) {
-      console.error('Error creating prediction charts:', error);
-    }
   };
 
   const createPerformanceChart = () => {
@@ -334,191 +309,6 @@ const AIDashboard: React.FC<AIDashboardProps> = ({
 
     g.append("g")
       .call(d3.axisLeft(yScale).tickFormat(d3.format(".0%")));
-  };
-
-  // Charts specifically for Predictions tab
-  const createPredictionsPerformanceChart = () => {
-    const svg = d3.select(predictionsPerformanceChartRef.current);
-    if (!svg.node()) return;
-
-    svg.selectAll("*").remove();
-
-    const containerWidth = predictionsPerformanceChartRef.current?.parentElement?.clientWidth || 400;
-    const width = Math.min(containerWidth, 400);
-    const height = 250;
-    const margin = { top: 20, right: 30, bottom: 40, left: 50 };
-
-    // Performance data over days
-    const data = [
-      { day: 0, loadTime: 1400 },  // Today
-      { day: 1, loadTime: 1200 },  // Yesterday
-      { day: 2, loadTime: 1300 },
-      { day: 3, loadTime: 1100 },
-      { day: 4, loadTime: 1250 }
-    ];
-
-    const xScale = d3.scaleLinear()
-      .domain(d3.extent(data, d => d.day) as [number, number])
-      .range([margin.left, width - margin.right]);
-
-    const yScale = d3.scaleLinear()
-      .domain([800, 1600])
-      .range([height - margin.bottom, margin.top]);
-
-    // Add axes
-    svg.append("g")
-      .attr("transform", `translate(0,${height - margin.bottom})`)
-      .call(d3.axisBottom(xScale))
-      .append("text")
-      .attr("x", width / 2)
-      .attr("y", 35)
-      .attr("fill", "#00ff88")
-      .style("text-anchor", "middle")
-      .text("Days Ago");
-
-    svg.append("g")
-      .attr("transform", `translate(${margin.left},0)`)
-      .call(d3.axisLeft(yScale))
-      .append("text")
-      .attr("transform", "rotate(-90)")
-      .attr("y", -35)
-      .attr("x", -(height / 2))
-      .attr("fill", "#00ff88")
-      .style("text-anchor", "middle")
-      .text("Load Time (ms)");
-
-    // Create line
-    const line = d3.line<any>()
-      .x(d => xScale(d.day))
-      .y(d => yScale(d.loadTime))
-      .curve(d3.curveMonotoneX);
-
-    // Add line
-    svg.append("path")
-      .datum(data)
-      .attr("fill", "none")
-      .attr("stroke", "#00ff88")
-      .attr("stroke-width", 3)
-      .attr("d", line);
-
-    // Add dots
-    svg.selectAll(".dot")
-      .data(data)
-      .enter().append("circle")
-      .attr("cx", d => xScale(d.day))
-      .attr("cy", d => yScale(d.loadTime))
-      .attr("r", 5)
-      .attr("fill", "#00ff88")
-      .style("cursor", "pointer")
-      .append("title")
-      .text(d => `${d.day} days ago: ${d.loadTime}ms`);
-  };
-
-  const createPredictionsFutureChart = () => {
-    const svg = d3.select(predictionsFutureChartRef.current);
-    if (!svg.node()) return;
-
-    svg.selectAll("*").remove();
-
-    const containerWidth = predictionsFutureChartRef.current?.parentElement?.clientWidth || 400;
-    const width = Math.min(containerWidth, 400);
-    const height = 250;
-    const margin = { top: 20, right: 30, bottom: 40, left: 50 };
-
-    // Future prediction data
-    const data = [
-      { day: 7, failureProbability: 12 },
-      { day: 14, failureProbability: 18 },
-      { day: 21, failureProbability: 25 },
-      { day: 30, failureProbability: 32 }
-    ];
-
-    const xScale = d3.scaleLinear()
-      .domain([0, 30])
-      .range([margin.left, width - margin.right]);
-
-    const yScale = d3.scaleLinear()
-      .domain([0, 50])
-      .range([height - margin.bottom, margin.top]);
-
-    // Add axes
-    svg.append("g")
-      .attr("transform", `translate(0,${height - margin.bottom})`)
-      .call(d3.axisBottom(xScale))
-      .append("text")
-      .attr("x", width / 2)
-      .attr("y", 35)
-      .attr("fill", "#ff6b35")
-      .style("text-anchor", "middle")
-      .text("Days in Future");
-
-    svg.append("g")
-      .attr("transform", `translate(${margin.left},0)`)
-      .call(d3.axisLeft(yScale))
-      .append("text")
-      .attr("transform", "rotate(-90)")
-      .attr("y", -35)
-      .attr("x", -(height / 2))
-      .attr("fill", "#ff6b35")
-      .style("text-anchor", "middle")
-      .text("Failure Risk (%)");
-
-    // Create line
-    const line = d3.line<any>()
-      .x(d => xScale(d.day))
-      .y(d => yScale(d.failureProbability))
-      .curve(d3.curveMonotoneX);
-
-    // Add gradient area under the line
-    const area = d3.area<any>()
-      .x(d => xScale(d.day))
-      .y0(height - margin.bottom)
-      .y1(d => yScale(d.failureProbability))
-      .curve(d3.curveMonotoneX);
-
-    // Add gradient definition
-    const gradient = svg.append("defs")
-      .append("linearGradient")
-      .attr("id", "riskGradient")
-      .attr("gradientUnits", "userSpaceOnUse")
-      .attr("x1", 0).attr("y1", height)
-      .attr("x2", 0).attr("y2", 0);
-
-    gradient.append("stop")
-      .attr("offset", "0%")
-      .attr("stop-color", "#ff6b35")
-      .attr("stop-opacity", 0.1);
-
-    gradient.append("stop")
-      .attr("offset", "100%")
-      .attr("stop-color", "#ff6b35")
-      .attr("stop-opacity", 0.8);
-
-    // Add area
-    svg.append("path")
-      .datum(data)
-      .attr("fill", "url(#riskGradient)")
-      .attr("d", area);
-
-    // Add line
-    svg.append("path")
-      .datum(data)
-      .attr("fill", "none")
-      .attr("stroke", "#ff6b35")
-      .attr("stroke-width", 3)
-      .attr("d", line);
-
-    // Add dots
-    svg.selectAll(".dot")
-      .data(data)
-      .enter().append("circle")
-      .attr("cx", d => xScale(d.day))
-      .attr("cy", d => yScale(d.failureProbability))
-      .attr("r", 5)
-      .attr("fill", "#ff6b35")
-      .style("cursor", "pointer")
-      .append("title")
-      .text(d => `Day ${d.day}: ${d.failureProbability}% risk`);
   };
 
   const createTestHeatmap = () => {
@@ -729,7 +519,7 @@ const AIDashboard: React.FC<AIDashboardProps> = ({
 
 
         <div className="tab-navigation">
-          {['overview', 'insights', 'predictions', 'performance', 'security', 'visual'].map(tab => (
+          {['overview', 'security', 'visual'].map(tab => (
             <button
               key={tab}
               className={`tab-button ${activeTab === tab ? 'active' : ''}`}
@@ -833,163 +623,8 @@ const AIDashboard: React.FC<AIDashboardProps> = ({
                   <svg ref={predictionChartRef}></svg>
                 </div>
               </div>
-            </div>
-          )}
 
-          {activeTab === 'insights' && (
-            <div className="dashboard-grid">
-              {/* AI Actionable Insights */}
-              <div className="dashboard-card" style={{ gridColumn: 'span 2' }}>
-                <h3 className="card-title">🧠 AI Actionable Insights</h3>
-                {testResults?.predictions?.actionableInsights ? (
-                  <div className="insights-list">
-                    {testResults.predictions.actionableInsights.map((insight: any, index: number) => (
-                      <div key={index} className="insight-item">
-                        <div className="insight-header">
-                          <h4>{insight.title}</h4>
-                          <span className={`priority-badge priority-${insight.priority}`}>
-                            {insight.priority}
-                          </span>
-                        </div>
-                        <p>{insight.description}</p>
-                        <div className="insight-details">
-                          <div><strong>Impact:</strong> {insight.impact}</div>
-                          <div><strong>Effort:</strong> {insight.effort}</div>
-                          <div><strong>Timeline:</strong> {insight.estimatedTimeToImplement}</div>
-                          <div><strong>Expected Outcome:</strong> {insight.expectedOutcome}</div>
-                        </div>
-                        {insight.actionItems && (
-                          <div className="action-items">
-                            <strong>Action Items:</strong>
-                            <ul>
-                              {insight.actionItems.map((item: string, i: number) => (
-                                <li key={i}>{item}</li>
-                              ))}
-                            </ul>
-                          </div>
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <div className="no-data">No AI insights available. Enable Predictive Analytics and run a test to see recommendations.</div>
-                )}
-              </div>
-
-              {/* Quick Stats */}
-              <div className="dashboard-card">
-                <h3 className="card-title">📊 Quick Stats</h3>
-                <div className="stats-grid">
-                  {testResults && (
-                    <>
-                      <div className="stat-item">
-                        <div className="stat-value">{testResults.testsPassed || 0}</div>
-                        <div className="stat-label">Tests Passed</div>
-                      </div>
-                      <div className="stat-item">
-                        <div className="stat-value">{testResults.testsFailed || 0}</div>
-                        <div className="stat-label">Tests Failed</div>
-                      </div>
-                      <div className="stat-item">
-                        <div className="stat-value">
-                          {testResults.aiMetadata?.confidenceScore ?
-                            Math.round(testResults.aiMetadata.confidenceScore * 100) + '%' : 'N/A'}
-                        </div>
-                        <div className="stat-label">AI Confidence</div>
-                      </div>
-                      <div className="stat-item">
-                        <div className="stat-value">
-                          {testResults.predictions?.riskAssessment?.level || 'Unknown'}
-                        </div>
-                        <div className="stat-label">Risk Level</div>
-                      </div>
-                    </>
-                  )}
-                </div>
-              </div>
-
-              {/* Recent Alerts */}
-              <div className="dashboard-card">
-                <h3 className="card-title">⚠️ Recent Alerts</h3>
-                <div className="alerts-container">
-                  {alerts.length > 0 ? (
-                    alerts.map((alert, index) => (
-                      <motion.div
-                        key={alert.id}
-                        className="alert-item"
-                        initial={{ opacity: 0, x: 50 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        transition={{ delay: index * 0.1 }}
-                      >
-                        <div style={{ fontWeight: 'bold' }}>{alert.message}</div>
-                        <div className="alert-time">
-                          {alert.timestamp.toLocaleTimeString()}
-                        </div>
-                      </motion.div>
-                    ))
-                  ) : (
-                    <div className="no-data">No recent alerts</div>
-                  )}
-                </div>
-              </div>
-            </div>
-          )}
-
-          {activeTab === 'predictions' && (
-            <div className="dashboard-grid">
-              {/* Performance Chart */}
-              <div className="dashboard-card">
-                <h3 className="card-title">📈 Performance Trends</h3>
-                <div className="chart-description">
-                  <p><strong>Bottom (X-axis) = Days ago:</strong> 0 = Today • 1.0 = Yesterday • 2.0 = 2 days ago • 4.0 = 4 days ago</p>
-                  <p><strong>Left side (Y-axis) = Load time:</strong> 400 = 0.4sec • 1000 = 1sec • 1400 = 1.4sec</p>
-                  <p><strong>Goals:</strong> Under 1000ms = Great • Under 3000ms = Acceptable • Over 3000ms = Users leave</p>
-                </div>
-                <div className="chart-container" style={{ minHeight: '250px', background: 'rgba(0,0,0,0.1)', border: '1px solid #333' }}>
-                  <svg ref={predictionsPerformanceChartRef} width="100%" height="250" style={{ display: 'block' }}>
-                    <text x="200" y="125" textAnchor="middle" fill="#00ff88">Loading Performance Chart...</text>
-                  </svg>
-                </div>
-              </div>
-
-              {/* Predictions */}
-              <div className="dashboard-card">
-                <h3 className="card-title">🔮 AI Predictions</h3>
-                <div className="chart-description">
-                  <p><strong>Timeline:</strong> Next 30 days • <strong>Values:</strong> Predicted failure probability (%)</p>
-                  <p><strong>How it helps:</strong> Proactively identify potential issues before they occur</p>
-                </div>
-                <div className="chart-container" style={{ minHeight: '250px', background: 'rgba(0,0,0,0.1)', border: '1px solid #333' }}>
-                  <svg ref={predictionsFutureChartRef} width="100%" height="250" style={{ display: 'block' }}>
-                    <text x="200" y="125" textAnchor="middle" fill="#ff6b35">Loading Future Predictions...</text>
-                  </svg>
-                </div>
-              </div>
-
-              {/* Future Failure Predictions */}
-              <div className="dashboard-card">
-                <h3 className="card-title">🚨 Failure Predictions</h3>
-                {testResults?.predictions?.riskAnalysis ? (
-                  <div className="risk-predictions">
-                    <div className="risk-item">
-                      <span className="risk-metric">High Risk Components:</span>
-                      <span className="risk-value">{testResults.predictions.riskAnalysis.highRiskComponents || 0}</span>
-                    </div>
-                    <div className="risk-item">
-                      <span className="risk-metric">Predicted Failures (7 days):</span>
-                      <span className="risk-value">{testResults.predictions.riskAnalysis.predictedFailures || 'Low'}</span>
-                    </div>
-                    <div className="risk-item">
-                      <span className="risk-metric">Confidence Level:</span>
-                      <span className="risk-value">{testResults.predictions.riskAnalysis.confidence || '85%'}</span>
-                    </div>
-                  </div>
-                ) : (
-                  <div className="no-data">Building prediction models...</div>
-                )}
-              </div>
-
-              {/* Performance Trends */}
+              {/* Performance Predictions */}
               <div className="dashboard-card">
                 <h3 className="card-title">📈 Performance Predictions</h3>
                 <div className="chart-description">
@@ -1083,58 +718,6 @@ const AIDashboard: React.FC<AIDashboardProps> = ({
                   </div>
                 ) : (
                   <div className="no-data">No security analysis available</div>
-                )}
-              </div>
-            </div>
-          )}
-
-          {activeTab === 'performance' && (
-            <div className="dashboard-grid">
-              {/* Performance Metrics */}
-              <div className="dashboard-card" style={{ gridColumn: 'span 2' }}>
-                <h3 className="card-title">⚡ Performance Analysis</h3>
-                {testResults?.performance ? (
-                  <div className="performance-analysis">
-                    <div className="performance-grid">
-                      <div className="performance-metric">
-                        <div className="metric-value">{Math.round(testResults.performance.loadTime)}ms</div>
-                        <div className="metric-label">Load Time</div>
-                      </div>
-                      <div className="performance-metric">
-                        <div className="metric-value">{Math.round(testResults.performance.firstContentfulPaint || 0)}ms</div>
-                        <div className="metric-label">First Contentful Paint</div>
-                      </div>
-                      <div className="performance-metric">
-                        <div className="metric-value">{Math.round(testResults.performance.largestContentfulPaint || 0)}ms</div>
-                        <div className="metric-label">Largest Contentful Paint</div>
-                      </div>
-                      <div className="performance-metric">
-                        <div className="metric-value">{(testResults.performance.cumulativeLayoutShift || 0).toFixed(3)}</div>
-                        <div className="metric-label">Cumulative Layout Shift</div>
-                      </div>
-                    </div>
-
-                    {testResults.accessibilityReport && (
-                      <div className="accessibility-section">
-                        <h4>♿ Accessibility Analysis</h4>
-                        <div className="a11y-score">
-                          Score: {testResults.accessibilityReport.overallScore || 'Not available'}/100
-                        </div>
-                        {testResults.accessibilityReport.recommendations && (
-                          <div className="a11y-recommendations">
-                            <strong>Recommendations:</strong>
-                            <ul>
-                              {testResults.accessibilityReport.recommendations.slice(0, 5).map((rec: any, i: number) => (
-                                <li key={i}>{typeof rec === 'string' ? rec : rec.description || 'Accessibility improvement needed'}</li>
-                              ))}
-                            </ul>
-                          </div>
-                        )}
-                      </div>
-                    )}
-                  </div>
-                ) : (
-                  <div className="no-data">No performance data available</div>
                 )}
               </div>
             </div>
